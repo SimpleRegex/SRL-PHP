@@ -3,8 +3,11 @@
 namespace SRL;
 
 use SRL\Exceptions\ImplementationException;
+use SRL\Language\Interpreter;
 
 /**
+ * SRL facade for SRL Builder and SRL Language.
+ *
  * @method static \SRL\Builder literally(string $chars)
  * @method static \SRL\Builder optional(string $chars = null)
  * @method static \SRL\Builder eitherOf(\Closure $conditions)
@@ -30,10 +33,23 @@ use SRL\Exceptions\ImplementationException;
  * @method static \SRL\Builder anyLetter() Match any word character.
  * @method static \SRL\Builder noLetter() Match any non-word character.
  *
- * @mixin \SRL\Builder
+ * @mixin \SRL\Language\Interpreter
  */
 class SRL
 {
+    /** @var Interpreter */
+    protected $language;
+
+    public function __construct(string $query)
+    {
+        $this->language = new Interpreter($query);
+    }
+
+    public function __call($name, $arguments)
+    {
+        return $this->language->$name(...$arguments);
+    }
+
     /**
      * Call each method on a new Builder object.
      *
