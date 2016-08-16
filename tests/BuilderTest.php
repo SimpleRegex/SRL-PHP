@@ -85,4 +85,61 @@ class BuilderTest extends TestCase
         $this->assertEquals('color', $matches[0]->getName());
         $this->assertEquals('color', $matches[1]->getName());
     }
+
+    public function testReplace()
+    {
+        $query = SRL::capture(function (Builder $query) {
+            $query->anyLetter()->onceOrMore();
+        })->whitespace()->capture(function (Builder $query) {
+            $query->number()->onceOrMore();
+        })->literally(', ')->capture(function (Builder $query) {
+            $query->number()->onceOrMore();
+        })->caseInsensitive();
+
+        $this->assertEquals('April 1, 2003', $query->replace('${1} 1, $3', 'April 15, 2003', -1, $count));
+        $this->assertEquals(1, $count);
+    }
+
+    public function testFilter()
+    {
+        $this->assertEquals(
+            [2 => 'A:A', 3 => 'A:B'],
+            SRL::uppercaseLetter()->filter('A:$0', ['1', 'a', 'A', 'B'], -1, $count)
+        );
+        $this->assertEquals(2, $count);
+    }
+
+    public function testReplaceCallback()
+    {
+        $query = SRL::capture(function (Builder $query) {
+            $query->anyLetter()->onceOrMore();
+        })->whitespace()->capture(function (Builder $query) {
+            $query->number()->onceOrMore();
+        })->literally(', ')->capture(function (Builder $query) {
+            $query->number()->onceOrMore();
+        })->caseInsensitive();
+
+        $this->assertEquals('invoked', $query->replace(function ($params) {
+            $this->assertEquals(['April 15, 2003', 'April', '15', '2003'], $params);
+
+            return 'invoked';
+        }, 'April 15, 2003', -1, $count));
+        $this->assertEquals(1, $count);
+    }
+
+    public function testSplit()
+    {
+        $this->assertEquals(
+            ['sample,one', 'two', 'three'],
+            SRL::literally(',')->twice()->whitespace()->optional()->split('sample,one,, two,,three')
+        );
+    }
+
+    public function testLaziness()
+    {
+        $this->assertEquals(
+            ['sample,one', ' two', 'three'],
+            SRL::literally(',')->twice()->whitespace()->optional()->lazy()->split('sample,one,, two,,three')
+        );
+    }
 }

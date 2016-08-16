@@ -16,11 +16,6 @@ use SRL\Exceptions\ImplementationException;
  * @method $this unicode() Apply the 'u' modifier
  * @method $this allLazy() Apply the 'U' modifier
  *
- * 'startsWith' => '^',
- * 'mustEnd' => '$',
- * 'onceOrMore' => '+',
- * 'any' => '.',
- * 'optional' => '?'
  * @method $this startsWith() Expect the string to start with the following pattern.
  * @method $this mustEnd() Expect the string to end after the given pattern.
  * @method $this onceOrMore() Previous match must occur at least once.
@@ -149,7 +144,7 @@ class Builder
      * @param string|null $chars
      * @return Builder
      */
-    public function optional(string $chars = null)
+    public function optional(string $chars = null) : self
     {
         if (!$chars) {
             return $this->add('?');
@@ -381,6 +376,54 @@ class Builder
         }
 
         return $result === 1;
+    }
+
+    /**
+     * Apply preg_replace with the regular expression.
+     *
+     * @see preg_replace()
+     * @see preg_replace_callback()
+     * @param string|array|Closure $replacement If a callback is supplied, preg_replace_callback will be called.
+     * @param string|array $haystack
+     * @param int $limit
+     * @param null $count
+     * @return string|array
+     */
+    public function replace($replacement, $haystack, int $limit = -1, &$count = null)
+    {
+        if (is_callable($replacement)) {
+            return preg_replace_callback($this->get(), $replacement, $haystack, $limit, $count);
+        }
+
+        return preg_replace($this->get(), $replacement, $haystack, $limit, $count);
+    }
+
+    /**
+     * Apply preg_split with the regular expression.
+     *
+     * @param string $string
+     * @param int $limit
+     * @param int $flags
+     * @return array
+     */
+    public function split(string $string, int $limit = -1, int $flags = 0) : array
+    {
+        return preg_split($this->get(), $string, $limit, $flags);
+    }
+
+    /**
+     * Apply preg_filter with the regular expression.
+     *
+     * @see preg_filter()
+     * @param string|array $replacement
+     * @param string|array $haystack
+     * @param int $limit
+     * @param null $count
+     * @return string|array
+     */
+    public function filter($replacement, $haystack, int $limit = -1, &$count = null)
+    {
+        return preg_filter($this->get(), $replacement, $haystack, $limit, $count);
     }
 
     /**
