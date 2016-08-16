@@ -6,6 +6,7 @@ use SRL\Exceptions\ImplementationException;
 
 /**
  * @method static \SRL\Builder startsWith()
+ * @method static \SRL\Builder literally($chars)
  * @mixin \SRL\Builder
  */
 class SRL

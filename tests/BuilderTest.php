@@ -56,4 +56,33 @@ class BuilderTest extends TestCase
         $this->assertTrue($regex->matches('super-He4vy.add+ress@top-Le.ve1.domains'));
         $this->assertFalse($regex->matches('sample.example.com'));
     }
+
+    public function testCaptureGroup()
+    {
+        $query = SRL::literally('colo')
+            ->optional('u')
+            ->literally('r')
+            ->eitherOf(function (Builder $query) {
+                $query->literally(':')->and(function (Builder $query) {
+                    $query->literally(' is');
+                });
+            })
+            ->whitespace()
+            ->capture(function (Builder $query) {
+                $query->anyLetter()->onceOrMore();
+            }, 'color')
+            ->literally('.');
+
+        $this->assertTrue($query->matches('my favorite color: blue.'));
+        $this->assertTrue($query->matches('my favorite colour is green.'));
+        $this->assertFalse($query->matches('my favorite colour is green!'));
+
+        $matches = $query->getMatches('my favorite colour is green. And my favorite color: yellow.');
+
+        $this->assertCount(2, $matches);
+        $this->assertEquals('green', $matches[0]->getMatch());
+        $this->assertEquals('yellow', $matches[1]->getMatch());
+        $this->assertEquals('color', $matches[0]->getName());
+        $this->assertEquals('color', $matches[1]->getName());
+    }
 }

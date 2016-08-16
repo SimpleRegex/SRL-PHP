@@ -2,9 +2,10 @@
 
 namespace SRL\Builder;
 
+use Closure;
 use SRL\Builder;
 
-class EitherOf extends Builder
+class EitherOf extends Capture
 {
     /** @var string[] RegEx being built. */
     protected $regEx = [];
@@ -15,16 +16,18 @@ class EitherOf extends Builder
     /**
      * @inheritdoc
      */
-    protected function add(string $condition)
+    protected function add(string $condition) : Builder
     {
         $this->regEx[] = $condition;
+
+        return $this;
     }
 
     /**
      * @inheritdoc
      */
-    public function get(string $delimiter = '/') : string
+    protected function getRawRegex() : string
     {
-        return $this->applyDelimiter(sprintf($this->group, implode('|', $this->regEx)), $delimiter) . $this->modifier;
+        return sprintf($this->group, implode('|', $this->regEx));
     }
 }
