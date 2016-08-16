@@ -85,10 +85,9 @@ match the query defined in the lambda function. Optionally, a name for
 that capture group (`color`) can be set as well:
 
 ```php
-$query = SRL::literally('color:')
-    ->whitespace()->capture(function (Builder $query) {
-        $query->anyLetter()->onceOrMore();
-    }, 'color')->literally('.');
+$query = SRL::literally('color:')->whitespace()->capture(function (Builder $query) {
+    $query->anyLetter()->onceOrMore();
+}, 'color')->literally('.');
 
 $matches = $query->getMatches('Favorite color: green. Another color: yellow.');
 
@@ -100,7 +99,7 @@ echo $matches[0]->getName(); // color
 Each match will be passed to a `SRL\Match` object, which will return the
 matches found.
 
-### Additional PCRE function
+### Additional PCRE functions
 
 Feel free to use all the available [PCRE PHP functions](http://php.net/manual/en/ref.pcre.php)
 in combination with SRL. Although, why bother? We've got wrappers for
@@ -112,6 +111,33 @@ apply one of the following methods directly on the SRL Builder:
 * `replace()` - Replace data using the expression.
 * `split()` - Split string into array through expression.
 * `filter()` - Filter items using the expression.
+
+### Lookarounds
+
+In case you want some regular expressions to only apply in certain
+conditions, lookarounds are probably what you're searching for.
+
+With queries like:
+
+```php
+SRL::capture(function (Builder $query) {
+    $query->literally('foo');
+})->ifFollowedBy(function (Builder $query) {
+    $query->literally('bar');
+});
+```
+
+you can easily capture 'foo', but only if this match is followed by
+'bar'.
+
+But to be honest, this is quite much code for such a simple thing, right?
+We've got you covered! Not only are we supporting anonymous functions
+for sub-expressions, strings and Builder objects are supported as well.
+Isn't that great? Just have a look at one possible example:
+
+```php
+SRL::capture('foo')->ifFollowedBy(SRL::literally('bar'));
+```
 
 ## Performance
 

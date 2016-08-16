@@ -2,7 +2,6 @@
 
 namespace SRL\Builder;
 
-use Closure;
 use SRL\Builder;
 
 class EitherOf extends Capture

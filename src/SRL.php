@@ -7,8 +7,8 @@ use SRL\Exceptions\ImplementationException;
 /**
  * @method static \SRL\Builder literally(string $chars)
  * @method static \SRL\Builder optional(string $chars = null)
- * @method static \SRL\Builder eitherOf(\Closure $conditions)
- * @method static \SRL\Builder capture(\Closure $conditions, string $name = null)
+ * @method static \SRL\Builder eitherOf(\Closure|string|\SRL\Builder $conditions)
+ * @method static \SRL\Builder capture(\Closure|string|\SRL\Builder $conditions, string $name = null)
  * @method static \SRL\Builder between(int $min, int $max)
  * @method static \SRL\Builder number(int $min = 0, int $max = 9)
  * @method static \SRL\Builder uppercaseLetter(string $min = 'A', string $max = 'Z')
