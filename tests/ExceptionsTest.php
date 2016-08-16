@@ -4,7 +4,6 @@ namespace Tests;
 
 use ReflectionClass;
 use SRL\Builder;
-use SRL\Exceptions\ImplementationException;
 use SRL\SRL;
 
 class ExceptionsTest extends TestCase

@@ -100,6 +100,19 @@ echo $matches[0]->getName(); // color
 Each match will be passed to a `SRL\Match` object, which will return the
 matches found.
 
+### Additional PCRE function
+
+Feel free to use all the available [PCRE PHP functions](http://php.net/manual/en/ref.pcre.php)
+in combination with SRL. Although, why bother? We've got wrappers for
+all common functions with additional features. Just like above, just
+apply one of the following methods directly on the SRL Builder:
+
+* `matches()` - Validate if the expression matches the given string.
+* `getMatches()` - Get all matches for supplied capture groups.
+* `replace()` - Replace data using the expression.
+* `split()` - Split string into array through expression.
+* `filter()` - Filter items using the expression.
+
 ## Performance
 
 The built Regular Expression will be cached, so you don't have to worry

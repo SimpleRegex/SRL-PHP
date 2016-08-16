@@ -16,7 +16,6 @@ use SRL\Exceptions\PregException;
  * @method $this caseInsensitive() Apply the 'i' modifier
  * @method $this unicode() Apply the 'u' modifier
  * @method $this allLazy() Apply the 'U' modifier
- *
  * @method $this startsWith() Expect the string to start with the following pattern.
  * @method $this mustEnd() Expect the string to end after the given pattern.
  * @method $this onceOrMore() Previous match must occur at least once.
