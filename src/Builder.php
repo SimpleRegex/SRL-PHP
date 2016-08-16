@@ -7,6 +7,7 @@ use SRL\Builder\EitherOf;
 use SRL\Builder\Capture;
 use SRL\Exceptions\BuilderException;
 use SRL\Exceptions\ImplementationException;
+use SRL\Exceptions\PregException;
 
 /**
  * @method $this all() Apply the 'g' modifier
@@ -32,10 +33,10 @@ class Builder
     const NON_LITERAL_CHARACTERS = '[\\^$.|?*+()';
 
     /** @var string RegEx being built. */
-    protected $regEx = null;
+    protected $regEx = '';
 
     /** @var string Raw modifiers to apply on get(). */
-    protected $modifier = null;
+    protected $modifier = '';
 
     /** @var string[] Map method names to actual modifiers. */
     protected $modifierMapper = [
@@ -363,19 +364,22 @@ class Builder
     /**
      * Test if regular expression matches given string.
      *
+     * @see preg_match()
      * @param string $string
+     * @param int $flags
+     * @param int $offset
      * @return bool
-     * @throws BuilderException
+     * @throws PregException
      */
-    public function matches(string $string) : bool
+    public function matches(string $string, int $flags = 0, int $offset = 0) : bool
     {
-        $result = preg_match($this->get(), $string);
+        $result = preg_match($this->get(), $string, $matches, $flags, $offset);
 
         if ($result === false) {
-            throw new BuilderException('Invalid regular expression. I am sorry :(');
+            throw new PregException(preg_last_error());
         }
 
-        return $result === 1;
+        return $result !== 0;
     }
 
     /**
@@ -430,13 +434,14 @@ class Builder
      * Match regular expression against string and return all matches.
      *
      * @param string $string
+     * @param int $offset
      * @return Match[]|array
-     * @throws BuilderException
+     * @throws PregException
      */
-    public function getMatches(string $string) : array
+    public function getMatches(string $string, int $offset = 0) : array
     {
-        if (preg_match_all($this->get(), $string, $matches, PREG_SET_ORDER) === false) {
-            throw new BuilderException('Invalid regular expression. I am sorry :(');
+        if (preg_match_all($this->get(), $string, $matches, PREG_SET_ORDER, $offset) === false) {
+            throw new PregException(preg_last_error());
         }
 
         $matchObjects = [];
