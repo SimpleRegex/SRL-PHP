@@ -370,7 +370,7 @@ class Builder
      * @return bool
      * @throws PregException
      */
-    public function matches(string $string, int $flags = 0, int $offset = 0) : bool
+    public function isMatching(string $string, int $flags = 0, int $offset = 0) : bool
     {
         $result = preg_match($this->get(), $string, $matches, $flags, $offset);
 

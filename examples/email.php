@@ -22,7 +22,7 @@ $regex = SRL::startsWith()
     ->mustEnd()
     ->caseInsensitive();
 
-var_dump($regex->matches('email@example.com'));
-var_dump($regex->matches('invalid email@example.com'));
+var_dump($regex->isMatching('email@example.com'));
+var_dump($regex->isMatching('invalid email@example.com'));
 
 var_dump(preg_match($regex, 'sample@with.new.tlds'));

@@ -68,12 +68,12 @@ use the `->get()` method, or just let it cast to a string:
 preg_match($query, 'sample@email.com');
 ```
 
-Of course, you can use the builtin match methods for an even easier
+Of course, you may use the builtin match methods for an even easier
 approach:
 
 ```php
-$query->matches('sample@email.com'); // true
-$query->matches('invalid-email.com'); // false
+$query->isMatching('sample@email.com'); // true
+$query->isMatching('invalid-email.com'); // false
 ```
 
 ### Capture Groups
@@ -107,7 +107,7 @@ in combination with SRL. Although, why bother? We've got wrappers for
 all common functions with additional features. Just like above, just
 apply one of the following methods directly on the SRL Builder:
 
-* `matches()` - Validate if the expression matches the given string.
+* `isMatching()` - Validate if the expression matches the given string.
 * `getMatches()` - Get all matches for supplied capture groups.
 * `replace()` - Replace data using the expression.
 * `split()` - Split string into array through expression.

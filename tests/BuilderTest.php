@@ -53,8 +53,8 @@ class BuilderTest extends TestCase
         $this->assertEquals(0, preg_match($regex, 'no@pe.123'));
         $this->assertEquals(0, preg_match($regex, 'invalid@email.com123'));
 
-        $this->assertTrue($regex->matches('super-He4vy.add+ress@top-Le.ve1.domains'));
-        $this->assertFalse($regex->matches('sample.example.com'));
+        $this->assertTrue($regex->isMatching('super-He4vy.add+ress@top-Le.ve1.domains'));
+        $this->assertFalse($regex->isMatching('sample.example.com'));
     }
 
     public function testCaptureGroup()
@@ -73,9 +73,9 @@ class BuilderTest extends TestCase
             }, 'color')
             ->literally('.');
 
-        $this->assertTrue($query->matches('my favorite color: blue.'));
-        $this->assertTrue($query->matches('my favorite colour is green.'));
-        $this->assertFalse($query->matches('my favorite colour is green!'));
+        $this->assertTrue($query->isMatching('my favorite color: blue.'));
+        $this->assertTrue($query->isMatching('my favorite colour is green.'));
+        $this->assertFalse($query->isMatching('my favorite colour is green!'));
 
         $matches = $query->getMatches('my favorite colour is green. And my favorite color: yellow.');
 

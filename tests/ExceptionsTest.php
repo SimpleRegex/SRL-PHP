@@ -32,7 +32,7 @@ class ExceptionsTest extends TestCase
      */
     public function testInvalidMatches()
     {
-        SRL::literally('foo')->once()->matches('foo', 0, 10);
+        SRL::literally('foo')->once()->isMatching('foo', 0, 10);
     }
 
     /**
