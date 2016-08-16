@@ -57,6 +57,8 @@ an email address.
 
 ## Features
 
+### Matching
+
 The SRL Builder is as simple as the example above states. To retrieve
 the built Regular Expression which can be used by external tools like
 [preg_match](http://php.net/manual/en/function.preg-match.php), either
@@ -74,6 +76,30 @@ $query->matches('sample@email.com'); // true
 $query->matches('invalid-email.com'); // false
 ```
 
+### Capture Groups
+
+Since regular expressions aren't only used for validation, capturing
+groups is supported by SRL as well. After defining the Regular
+Expression just like before, simply add a `capture`-group which will
+match the query defined in the lambda function. Optionally, a name for
+that capture group (`color`) can be set as well:
+
+```php
+$query = SRL::literally('color:')
+    ->whitespace()->capture(function (Builder $query) {
+        $query->anyLetter()->onceOrMore();
+    }, 'color')->literally('.');
+
+$matches = $query->getMatches('Favorite color: green. Another color: yellow.');
+
+echo $matches[0]->getMatch(); // green
+echo $matches[1]->getMatch(); // yellow
+echo $matches[0]->getName(); // color
+```
+
+Each match will be passed to a `SRL\Match` object, which will return the
+matches found.
+
 ## Performance
 
 The built Regular Expression will be cached, so you don't have to worry
@@ -89,7 +115,8 @@ to it, otherwise the Regular Expression will be unreadable just as before.
 
 ## Usage
 
-Add the package to your ``require`` section in the ``composer.json``-file and update your project.
+Add the package to your ``require`` section in the ``composer.json``-file
+and update your project.
 
 ```json
 "require": {
