@@ -5,6 +5,7 @@ namespace SRL;
 use SRL\Exceptions\ImplementationException;
 
 /**
+ * @method static \SRL\Builder oneOf(string $chars)
  * @method static \SRL\Builder literally(string $chars)
  * @method static \SRL\Builder optional(string $chars = null)
  * @method static \SRL\Builder eitherOf(\Closure|string|\SRL\Builder $conditions)
