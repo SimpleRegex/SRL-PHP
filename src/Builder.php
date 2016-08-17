@@ -33,8 +33,8 @@ class Builder
 {
     const NON_LITERAL_CHARACTERS = '[\\^$.|?*+()';
 
-    /** @var string RegEx being built. */
-    protected $regEx = '';
+    /** @var string[] RegEx being built. */
+    protected $regEx = [];
 
     /** @var string Raw modifiers to apply on get(). */
     protected $modifier = '';
@@ -63,6 +63,12 @@ class Builder
         'noLetter' => '\W'
     ];
 
+    /** @var string Desired group, if any. */
+    protected $group = '%s';
+
+    /** @var string String to implode with. */
+    protected $implodeString = '';
+
     /**********************************************************/
     /*                     CHARACTERS                         */
     /**********************************************************/
@@ -71,11 +77,19 @@ class Builder
      * Add raw Regular Expression to current expression.
      *
      * @param string $regularExpression
+     * @throws BuilderException
      * @return Builder
      */
     public function raw(string $regularExpression) : self
     {
-        return $this->add($regularExpression);
+        $this->add($regularExpression);
+
+        if (!$this->isValid()) {
+            $this->revertLast();
+            throw new BuilderException('Adding raw would invalidate this regular expression. Reverted.');
+        }
+
+        return $this;
     }
 
     /**
@@ -407,6 +421,16 @@ class Builder
         return $matchObjects;
     }
 
+    /**
+     * Validate regular expression.
+     *
+     * @return bool
+     */
+    public function isValid() : bool
+    {
+        return @preg_match($this->get(), null) !== false;
+    }
+
     /**********************************************************/
     /*                   INTERNAL METHODS                     */
     /**********************************************************/
@@ -418,7 +442,7 @@ class Builder
      */
     protected function getRawRegex() : string
     {
-        return $this->regEx;
+        return sprintf($this->group, implode($this->implodeString, $this->regEx));
     }
 
     /**
@@ -429,7 +453,7 @@ class Builder
      */
     protected function add(string $condition) : self
     {
-        $this->regEx .= $condition;
+        $this->regEx[] = $condition;
 
         return $this;
     }
@@ -484,6 +508,16 @@ class Builder
         }
 
         return $this->add($builder->get(''));
+    }
+
+    /**
+     * Get and remove last added element.
+     *
+     * @return string
+     */
+    protected function revertLast()
+    {
+        return array_pop($this->regEx);
     }
 
     /**********************************************************/

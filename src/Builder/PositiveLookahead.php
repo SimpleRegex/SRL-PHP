@@ -2,7 +2,9 @@
 
 namespace SRL\Builder;
 
-class PositiveLookahead extends Capture
+use SRL\Builder;
+
+class PositiveLookahead extends Builder
 {
     /** @var string Desired lookahead group. */
     protected $group = '(?=%s)';

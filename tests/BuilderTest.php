@@ -45,6 +45,7 @@ class BuilderTest extends TestCase
             ->mustEnd()
             ->caseInsensitive(); // Not using get to test __toString() method
 
+        $this->assertTrue($regex->isValid());
         $this->assertEquals(1, preg_match($regex, 'sample@example.com'));
         $this->assertEquals(1, preg_match($regex, 'super-He4vy.add+ress@top-Le.ve1.domains'));
         $this->assertEquals(0, preg_match($regex, 'sample.example.com'));
@@ -141,5 +142,10 @@ class BuilderTest extends TestCase
             ['sample,one', ' two', 'three'],
             SRL::literally(',')->twice()->whitespace()->optional()->lazy()->split('sample,one,, two,,three')
         );
+    }
+
+    public function testRaw()
+    {
+        $this->assertTrue(SRL::literally('foo')->raw('b[a-z]r')->isValid());
     }
 }

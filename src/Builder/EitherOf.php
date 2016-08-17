@@ -4,29 +4,11 @@ namespace SRL\Builder;
 
 use SRL\Builder;
 
-class EitherOf extends Capture
+class EitherOf extends Builder
 {
-    /** @var string[] RegEx being built. */
-    protected $regEx = [];
-
     /** @var string Desired match group. */
     protected $group = '(?:%s)';
 
-    /**
-     * @inheritdoc
-     */
-    protected function add(string $condition) : Builder
-    {
-        $this->regEx[] = $condition;
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function getRawRegex() : string
-    {
-        return sprintf($this->group, implode('|', $this->regEx));
-    }
+    /** @var string String to implode with. */
+    protected $implodeString = '|';
 }

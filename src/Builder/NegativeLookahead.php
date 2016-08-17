@@ -2,7 +2,9 @@
 
 namespace SRL\Builder;
 
-class NegativeLookahead extends Capture
+use SRL\Builder;
+
+class NegativeLookahead extends Builder
 {
     /** @var string Desired lookahead group. */
     protected $group = '(?!%s)';

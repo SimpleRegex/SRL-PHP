@@ -10,14 +10,6 @@ class Capture extends Builder
     protected $group = '(%s)';
 
     /**
-     * @inheritdoc
-     */
-    protected function getRawRegex() : string
-    {
-        return sprintf($this->group, $this->regEx);
-    }
-
-    /**
      * Set name for capture group.
      *
      * @param string $name
