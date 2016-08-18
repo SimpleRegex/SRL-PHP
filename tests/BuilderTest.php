@@ -81,10 +81,8 @@ class BuilderTest extends TestCase
         $matches = $query->getMatches('my favorite colour is green. And my favorite color: yellow.');
 
         $this->assertCount(2, $matches);
-        $this->assertEquals('green', $matches[0]->getMatch());
-        $this->assertEquals('yellow', $matches[1]->getMatch());
-        $this->assertEquals('color', $matches[0]->getName());
-        $this->assertEquals('color', $matches[1]->getName());
+        $this->assertEquals('green', $matches[0]->get('color'));
+        $this->assertEquals('yellow', $matches[1]->get('color'));
     }
 
     public function testReplace()

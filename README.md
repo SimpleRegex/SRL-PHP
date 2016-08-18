@@ -91,9 +91,8 @@ $query = SRL::literally('color:')->whitespace()->capture(function (Builder $quer
 
 $matches = $query->getMatches('Favorite color: green. Another color: yellow.');
 
-echo $matches[0]->getMatch(); // green
-echo $matches[1]->getMatch(); // yellow
-echo $matches[0]->getName(); // color
+echo $matches[0]->get('color'); // green
+echo $matches[1]->get('color'); // yellow
 ```
 
 Each match will be passed to a `SRL\Match` object, which will return the
@@ -175,6 +174,7 @@ stuff that's planned would contain:
 * SQL-Like syntax: `BEGIN WITH EITHER (NUMBER, LETTER, ._%+-) ...`
 * More functionality
 * More documentation
+* Variable support
 * Rule the world
 
 ## License

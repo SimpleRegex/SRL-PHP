@@ -21,6 +21,7 @@ use SRL\Exceptions\PregException;
  * @method $this startsWith() Expect the string to start with the following pattern.
  * @method $this mustEnd() Expect the string to end after the given pattern.
  * @method $this onceOrMore() Previous match must occur at least once.
+ * @method $this neverOrMore() Previous match must occur zero to infinite times.
  * @method $this any() Match any character.
  * @method $this tab() Match tab character.
  * @method $this newLine() Match new line character.
@@ -54,6 +55,7 @@ class Builder
         'startsWith' => '^',
         'mustEnd' => '$',
         'onceOrMore' => '+',
+        'neverOrMore' => '*',
         'any' => '.',
         'tab' => '\\t',
         'newLine' => '\\n',
@@ -297,10 +299,30 @@ class Builder
     public function lazy() : self
     {
         if (strpos('+*}?', substr($this->getRawRegex(), -1)) === false) {
-            throw new ImplementationException('Cannot apply laziness at this point.');
+            if (substr(end($this->regEx), -1) === ')') {
+                return $this->add(substr($this->revertLast(), 0, -1) . '?)');
+            }
+
+            throw new ImplementationException('Cannot apply laziness at this point. Only applicable after quantifiers.');
         }
 
         return $this->add('?');
+    }
+
+    /**
+     * Match up to the given condition.
+     *
+     * @param $toCondition
+     * @return Builder
+     */
+    public function to($toCondition) : self
+    {
+        try {
+            $this->lazy();
+        } catch (ImplementationException $e) {
+        }
+
+        return $this->addClosure(new self, $toCondition);
     }
 
     /**********************************************************/

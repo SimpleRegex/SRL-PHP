@@ -4,10 +4,11 @@ namespace SRL;
 
 class Match
 {
+    /** @var string[] */
     protected $rawData = [];
 
-    protected $name = null;
-    protected $match = null;
+    /** @var string[] */
+    protected $attributes = [];
 
     public function __construct(array $data = [])
     {
@@ -15,29 +16,34 @@ class Match
 
         foreach ($data as $k => $v) {
             if (is_string($k)) {
-                $this->name = $k;
-                $this->match = $v;
-
-                return;
+                $this->attributes[$k] = $v;
             }
         }
 
-        $this->match = $data[1] ?? null;
+        if (empty($this->attributes)) {
+            array_shift($data);
+            $this->attributes = array_values($data);
+        }
     }
 
     /**
-     * @return null|string
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
+     * Get one match. If using named capture groups, you can use that name here.
+     *
+     * @param string|int $name Name or position of match.
      * @return string|null
      */
-    public function getMatch()
+    public function get($name)
     {
-        return $this->match;
+        return $this->attributes[$name] ?? null;
+    }
+
+    /**
+     * Get all matches.
+     *
+     * @return array
+     */
+    public function getMatches() : array
+    {
+        return $this->attributes;
     }
 }
