@@ -6,7 +6,9 @@ use Closure;
 use SRL\Builder\EitherOf;
 use SRL\Builder\Capture;
 use SRL\Builder\NegativeLookahead;
+use SRL\Builder\NegativeLookbehind;
 use SRL\Builder\PositiveLookahead;
+use SRL\Builder\PositiveLookbehind;
 use SRL\Exceptions\BuilderException;
 use SRL\Exceptions\ImplementationException;
 use SRL\Exceptions\PregException;
@@ -97,22 +99,23 @@ class Builder
     /**
      * Literally match one of these characters.
      *
+     * @param string $chars
+     * @return Builder
+     */
+    public function oneOf(string $chars)
+    {
+        return $this->add('[' . implode('', array_map([$this, 'escape'], str_split($chars))) . ']');
+    }
+
+    /**
+     * Literally match all of these characters in that order.
+     *
      * @param string $chars One or more characters.
      * @return Builder
      */
     public function literally(string $chars) : self
     {
-        $chars = str_split($chars);
-
-        foreach ($chars as $char) {
-            if (strpos(static::NON_LITERAL_CHARACTERS, $char) !== false) {
-                $char = '\\' . $char;
-            }
-
-            $this->add($char);
-        }
-
-        return $this;
+        return $this->add(implode('', array_map([$this, 'escape'], str_split($chars))));
     }
 
     /**
@@ -175,6 +178,36 @@ class Builder
     public function and ($conditions) : self
     {
         return $this->addClosure(new Builder, $conditions);
+    }
+
+    /**
+     * Positive lookbehind. Match the previous condition only if given conditions already occurred.
+     *
+     * @param Closure|Builder|string $conditions Anonymous function with its Builder as a first parameter.
+     * @return Builder
+     */
+    public function ifAlreadyHad($conditions) : self
+    {
+        $condition = $this->revertLast();
+
+        $this->addClosure(new PositiveLookbehind, $conditions);
+
+        return $this->add($condition);
+    }
+
+    /**
+     * Negative lookbehind. Match the previous condition only if given conditions did not already occur.
+     *
+     * @param Closure|Builder|string $conditions Anonymous function with its Builder as a first parameter.
+     * @return Builder
+     */
+    public function ifNotAlreadyHad($conditions) : self
+    {
+        $condition = $this->revertLast();
+
+        $this->addClosure(new NegativeLookbehind, $conditions);
+
+        return $this->add($condition);
     }
 
     /**
@@ -456,6 +489,17 @@ class Builder
     /**********************************************************/
     /*                   INTERNAL METHODS                     */
     /**********************************************************/
+
+    /**
+     * Escape specific character.
+     *
+     * @param string $char
+     * @return string
+     */
+    protected function escape(string $char)
+    {
+        return (strpos(static::NON_LITERAL_CHARACTERS, $char) !== false ? '\\' : '') . $char;
+    }
 
     /**
      * Get the raw regular expression without delimiter or modifiers.

@@ -32,13 +32,13 @@ class BuilderTest extends TestCase
             ->eitherOf(function (Builder $query) {
                 $query->number()
                     ->letter()
-                    ->literally('._%+-');
+                    ->oneOf('._%+-');
             })->onceOrMore()
             ->literally('@')
             ->eitherOf(function (Builder $query) {
                 $query->number()
                     ->letter()
-                    ->literally('.-');
+                    ->oneOf('.-');
             })->onceOrMore()
             ->literally('.')
             ->letter()->atLeast(2)

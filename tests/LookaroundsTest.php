@@ -27,4 +27,26 @@ class LookaroundsTest extends TestCase
         $this->assertFalse($query->isMatching('foobar'));
         $this->assertTrue($query->isMatching('foobazbar'));
     }
+
+    public function testPositiveLookbehind()
+    {
+        $query = SRL::literally('foo')->ifAlreadyHad(function (Builder $query) {
+            $query->literally('bar');
+        });
+
+        $this->assertTrue($query->isMatching('barfoo'));
+        $this->assertFalse($query->isMatching('foobar'));
+        $this->assertFalse($query->isMatching('bazfoo'));
+    }
+
+    public function testNegativeLookbehind()
+    {
+        $query = SRL::literally('foo')->ifNotAlreadyHad(function (Builder $query) {
+            $query->literally('bar');
+        });
+
+        $this->assertTrue($query->isMatching('bazfoo'));
+        $this->assertTrue($query->isMatching('foobar'));
+        $this->assertFalse($query->isMatching('barfoo'));
+    }
 }

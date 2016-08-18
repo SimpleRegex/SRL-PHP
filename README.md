@@ -18,13 +18,13 @@ $query = SRL::startsWith()
     ->eitherOf(function (Builder $query) {
         $query->number()
             ->letter()
-            ->literally('._%+-');
+            ->oneOf('._%+-');
     })->onceOrMore()
     ->literally('@')
     ->eitherOf(function (Builder $query) {
         $query->number()
             ->letter()
-            ->literally('.-');
+            ->oneOf('.-');
     })->onceOrMore()
     ->literally('.')
     ->letter()->atLeast(2)
@@ -137,6 +137,10 @@ Isn't that great? Just have a look at one possible example:
 ```php
 SRL::capture('foo')->ifFollowedBy(SRL::literally('bar'));
 ```
+
+If desired, lookbehinds are possible as well. Using `ifAlreadyHad()`
+you can validate a certain condition only if the previous string
+contained a specific pattern.
 
 ## Performance
 
