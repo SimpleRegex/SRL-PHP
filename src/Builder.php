@@ -5,6 +5,10 @@ namespace SRL;
 use Closure;
 use SRL\Builder\EitherOf;
 use SRL\Builder\Capture;
+use SRL\Builder\NegativeLookahead;
+use SRL\Builder\NegativeLookbehind;
+use SRL\Builder\PositiveLookahead;
+use SRL\Builder\PositiveLookbehind;
 use SRL\Exceptions\BuilderException;
 use SRL\Exceptions\ImplementationException;
 use SRL\Exceptions\PregException;
@@ -19,6 +23,7 @@ use SRL\Exceptions\PregException;
  * @method $this startsWith() Expect the string to start with the following pattern.
  * @method $this mustEnd() Expect the string to end after the given pattern.
  * @method $this onceOrMore() Previous match must occur at least once.
+ * @method $this neverOrMore() Previous match must occur zero to infinite times.
  * @method $this any() Match any character.
  * @method $this tab() Match tab character.
  * @method $this newLine() Match new line character.
@@ -31,8 +36,8 @@ class Builder
 {
     const NON_LITERAL_CHARACTERS = '[\\^$.|?*+()';
 
-    /** @var string RegEx being built. */
-    protected $regEx = '';
+    /** @var string[] RegEx being built. */
+    protected $regEx = [];
 
     /** @var string Raw modifiers to apply on get(). */
     protected $modifier = '';
@@ -52,6 +57,7 @@ class Builder
         'startsWith' => '^',
         'mustEnd' => '$',
         'onceOrMore' => '+',
+        'neverOrMore' => '*',
         'any' => '.',
         'tab' => '\\t',
         'newLine' => '\\n',
@@ -61,58 +67,31 @@ class Builder
         'noLetter' => '\W'
     ];
 
-    /**
-     * Build and return the resulting regular expression. This will apply the given delimiter and all modifiers.
-     *
-     * @param string $delimiter The delimiter to use. Defaults to '/'. If left empty, avoid using modifiers,
-     *                          since they then will be ignored.
-     * @return string The resulting regular expression.
-     */
-    public function get(string $delimiter = '/') : string
-    {
-        if (empty($delimiter)) {
-            return $this->getRawRegex();
-        }
+    /** @var string Desired group, if any. */
+    protected $group = '%s';
 
-        return sprintf(
-            '%s%s%s%s',
-            $delimiter,
-            str_replace($delimiter, '\\' . $delimiter, $this->getRawRegex()),
-            $delimiter,
-            $this->modifier
-        );
-    }
+    /** @var string String to implode with. */
+    protected $implodeString = '';
+
+    /**********************************************************/
+    /*                     CHARACTERS                         */
+    /**********************************************************/
 
     /**
-     * Get the raw regular expression without delimiter or modifiers.
+     * Add raw Regular Expression to current expression.
      *
-     * @return string
-     */
-    protected function getRawRegex() : string
-    {
-        return $this->regEx;
-    }
-
-    /**
-     * Build and return the resulting regular expression.
-     *
-     * @see \SRL\Builder::get() For more information.
-     * @return string The resulting regular expression.
-     */
-    public function __toString() : string
-    {
-        return $this->get();
-    }
-
-    /**
-     * Add condition to the expression query.
-     *
-     * @param string $condition
+     * @param string $regularExpression
+     * @throws BuilderException
      * @return Builder
      */
-    protected function add(string $condition) : self
+    public function raw(string $regularExpression) : self
     {
-        $this->regEx .= $condition;
+        $this->add($regularExpression);
+
+        if (!$this->isValid()) {
+            $this->revertLast();
+            throw new BuilderException('Adding raw would invalidate this regular expression. Reverted.');
+        }
 
         return $this;
     }
@@ -120,23 +99,160 @@ class Builder
     /**
      * Literally match one of these characters.
      *
+     * @param string $chars
+     * @return Builder
+     */
+    public function oneOf(string $chars)
+    {
+        return $this->add('[' . implode('', array_map([$this, 'escape'], str_split($chars))) . ']');
+    }
+
+    /**
+     * Literally match all of these characters in that order.
+     *
      * @param string $chars One or more characters.
      * @return Builder
      */
     public function literally(string $chars) : self
     {
-        $chars = str_split($chars);
+        return $this->add(implode('', array_map([$this, 'escape'], str_split($chars))));
+    }
 
-        foreach ($chars as $char) {
-            if (strpos(static::NON_LITERAL_CHARACTERS, $char) !== false) {
-                $char = '\\' . $char;
-            }
+    /**
+     * Match any number (in given span). Default will be a number between 0 and 9.
+     *
+     * @param int $min
+     * @param int $max
+     * @return Builder
+     */
+    public function number(int $min = 0, int $max = 9) : self
+    {
+        return $this->add("[$min-$max]");
+    }
 
-            $this->add($char);
+    /**
+     * Match any uppercase letter (between A to Z).
+     *
+     * @param string $min
+     * @param string $max
+     * @return Builder
+     */
+    public function uppercaseLetter(string $min = 'A', string $max = 'Z') : self
+    {
+        return $this->letter($min, $max);
+    }
+
+    /**
+     * Match any lowercase letter (between a to z).
+     *
+     * @param string $min
+     * @param string $max
+     * @return Builder
+     */
+    public function letter(string $min = 'a', string $max = 'z') : self
+    {
+        return $this->add("[$min-$max]");
+    }
+
+    /**********************************************************/
+    /*                        GROUPS                          */
+    /**********************************************************/
+
+    /**
+     * Match either of these conditions.
+     *
+     * @param Closure|Builder|string $conditions Anonymous function with its Builder as a first parameter.
+     * @return Builder
+     */
+    public function eitherOf($conditions) : self
+    {
+        return $this->addClosure(new EitherOf, $conditions);
+    }
+
+    /**
+     * Match all of these conditions. Basically reverts back to the default mode, if coming from eitherOf, etc.
+     *
+     * @param Closure|Builder|string $conditions Anonymous function with its Builder as a first parameter.
+     * @return Builder
+     */
+    public function and ($conditions) : self
+    {
+        return $this->addClosure(new Builder, $conditions);
+    }
+
+    /**
+     * Positive lookbehind. Match the previous condition only if given conditions already occurred.
+     *
+     * @param Closure|Builder|string $conditions Anonymous function with its Builder as a first parameter.
+     * @return Builder
+     */
+    public function ifAlreadyHad($conditions) : self
+    {
+        $condition = $this->revertLast();
+
+        $this->addClosure(new PositiveLookbehind, $conditions);
+
+        return $this->add($condition);
+    }
+
+    /**
+     * Negative lookbehind. Match the previous condition only if given conditions did not already occur.
+     *
+     * @param Closure|Builder|string $conditions Anonymous function with its Builder as a first parameter.
+     * @return Builder
+     */
+    public function ifNotAlreadyHad($conditions) : self
+    {
+        $condition = $this->revertLast();
+
+        $this->addClosure(new NegativeLookbehind, $conditions);
+
+        return $this->add($condition);
+    }
+
+    /**
+     * Positive lookahead. Match the previous condition only if followed by given conditions.
+     *
+     * @param Closure|Builder|string $conditions Anonymous function with its Builder as a first parameter.
+     * @return Builder
+     */
+    public function ifFollowedBy($conditions) : self
+    {
+        return $this->addClosure(new PositiveLookahead, $conditions);
+    }
+
+    /**
+     * Negative lookahead. Match the previous condition only if NOT followed by given conditions.
+     *
+     * @param Closure|Builder|string $conditions Anonymous function with its Builder as a first parameter.
+     * @return Builder
+     */
+    public function ifNotFollowedBy($conditions) : self
+    {
+        return $this->addClosure(new NegativeLookahead, $conditions);
+    }
+
+    /**
+     * Create capture group for given conditions.
+     *
+     * @param Closure|Builder|string $conditions Anonymous function with its Builder as a first parameter.
+     * @param string $name Name for capture group, if any.
+     * @return Builder
+     */
+    public function capture($conditions, string $name = null) : self
+    {
+        $builder = new Capture;
+
+        if ($name) {
+            $builder->setName($name);
         }
 
-        return $this;
+        return $this->addClosure($builder, $conditions);
     }
+
+    /**********************************************************/
+    /*                      QUANTIFIERS                       */
+    /**********************************************************/
 
     /**
      * Make the last or given condition optional.
@@ -151,50 +267,6 @@ class Builder
         }
 
         return $this->add("(?:$chars)?");
-    }
-
-    /**
-     * Match either of these conditions.
-     *
-     * @param Closure $conditions Anonymous function with its Builder as a first parameter.
-     * @return Builder
-     */
-    public function eitherOf(Closure $conditions) : self
-    {
-        $builder = new EitherOf;
-
-        $conditions($builder);
-
-        return $this->add($builder->get(''));
-    }
-
-    public function and (Closure $condition)
-    {
-        $builder = new Builder;
-
-        $condition($builder);
-
-        return $this->add($builder->get(''));
-    }
-
-    /**
-     * Create capture group for given conditions.
-     *
-     * @param Closure $conditions Anonymous function with its Builder as a first parameter.
-     * @param string $name Name for capture group, if any.
-     * @return Builder
-     */
-    public function capture(Closure $conditions, string $name = null) : self
-    {
-        $builder = new Capture;
-
-        if ($name) {
-            $builder->setName($name);
-        }
-
-        $conditions($builder);
-
-        return $this->add($builder->get(''));
     }
 
     /**
@@ -252,42 +324,6 @@ class Builder
     }
 
     /**
-     * Match any number (in given span). Default will be a number between 0 and 9.
-     *
-     * @param int $min
-     * @param int $max
-     * @return Builder
-     */
-    public function number(int $min = 0, int $max = 9) : self
-    {
-        return $this->add("[$min-$max]");
-    }
-
-    /**
-     * Match any uppercase letter (between A to Z).
-     *
-     * @param string $min
-     * @param string $max
-     * @return Builder
-     */
-    public function uppercaseLetter(string $min = 'A', string $max = 'Z') : self
-    {
-        return $this->letter($min, $max);
-    }
-
-    /**
-     * Match any lowercase letter (between a to z).
-     *
-     * @param string $min
-     * @param string $max
-     * @return Builder
-     */
-    public function letter(string $min = 'a', string $max = 'z') : self
-    {
-        return $this->add("[$min-$max]");
-    }
-
-    /**
      * Apply laziness to last match.
      *
      * @return Builder
@@ -296,68 +332,56 @@ class Builder
     public function lazy() : self
     {
         if (strpos('+*}?', substr($this->getRawRegex(), -1)) === false) {
-            throw new ImplementationException('Cannot apply laziness at this point.');
+            if (substr(end($this->regEx), -1) === ')') {
+                return $this->add(substr($this->revertLast(), 0, -1) . '?)');
+            }
+
+            throw new ImplementationException('Cannot apply laziness at this point. Only applicable after quantifiers.');
         }
 
         return $this->add('?');
     }
 
     /**
-     * Add a specific unique modifier. This will ignore all modifiers already set.
+     * Match up to the given condition.
      *
-     * @param string $modifier
+     * @param $toCondition
      * @return Builder
      */
-    protected function addUniqueModifier(string $modifier) : self
+    public function to($toCondition) : self
     {
-        if (strpos($this->modifier, $modifier) === false) {
-            $this->modifier .= $modifier;
+        try {
+            $this->lazy();
+        } catch (ImplementationException $e) {
         }
 
-        return $this;
+        return $this->addClosure(new self, $toCondition);
     }
 
-    /**
-     * Add the value from the simple mapper array to the regular expression.
-     *
-     * @param string $name
-     * @return Builder
-     * @throws BuilderException
-     */
-    protected function addFromMapper(string $name) : self
-    {
-        if (!isset($this->simpleMapper[$name])) {
-            throw new BuilderException('Unknown mapper.');
-        }
-
-        return $this->add($this->simpleMapper[$name]);
-    }
+    /**********************************************************/
+    /*                      TEST METHODS                      */
+    /**********************************************************/
 
     /**
-     * Try adding modifiers if their methods are defined in the modifierMapper attribute.
+     * Build and return the resulting regular expression. This will apply the given delimiter and all modifiers.
      *
-     * @param $name
-     * @param $arguments
-     * @return Builder
-     * @throws ImplementationException
+     * @param string $delimiter The delimiter to use. Defaults to '/'. If left empty, avoid using modifiers,
+     *                          since they then will be ignored.
+     * @return string The resulting regular expression.
      */
-    public function __call($name, $arguments) : self
+    public function get(string $delimiter = '/') : string
     {
-        if (isset($this->simpleMapper[$name])) {
-            // Simple mapper exists, add its character to the regex
-            return $this->addFromMapper($name);
+        if (empty($delimiter)) {
+            return $this->getRawRegex();
         }
 
-        if (isset($this->modifierMapper[$name])) {
-            // Modifier exists, add it
-            return $this->addUniqueModifier($this->modifierMapper[$name]);
-        }
-
-        throw new ImplementationException(sprintf(
-            'Call to undefined or invalid method %s:%s()',
-            get_class($this),
-            $name
-        ));
+        return sprintf(
+            '%s%s%s%s',
+            $delimiter,
+            str_replace($delimiter, '\\' . $delimiter, $this->getRawRegex()),
+            $delimiter,
+            $this->modifier
+        );
     }
 
     /**
@@ -450,5 +474,157 @@ class Builder
         }
 
         return $matchObjects;
+    }
+
+    /**
+     * Validate regular expression.
+     *
+     * @return bool
+     */
+    public function isValid() : bool
+    {
+        return @preg_match($this->get(), null) !== false;
+    }
+
+    /**********************************************************/
+    /*                   INTERNAL METHODS                     */
+    /**********************************************************/
+
+    /**
+     * Escape specific character.
+     *
+     * @param string $char
+     * @return string
+     */
+    protected function escape(string $char)
+    {
+        return (strpos(static::NON_LITERAL_CHARACTERS, $char) !== false ? '\\' : '') . $char;
+    }
+
+    /**
+     * Get the raw regular expression without delimiter or modifiers.
+     *
+     * @return string
+     */
+    protected function getRawRegex() : string
+    {
+        return sprintf($this->group, implode($this->implodeString, $this->regEx));
+    }
+
+    /**
+     * Add condition to the expression query.
+     *
+     * @param string $condition
+     * @return Builder
+     */
+    protected function add(string $condition) : self
+    {
+        $this->regEx[] = $condition;
+
+        return $this;
+    }
+
+    /**
+     * Add the value from the simple mapper array to the regular expression.
+     *
+     * @param string $name
+     * @return Builder
+     * @throws BuilderException
+     */
+    protected function addFromMapper(string $name) : self
+    {
+        if (!isset($this->simpleMapper[$name])) {
+            throw new BuilderException('Unknown mapper.');
+        }
+
+        return $this->add($this->simpleMapper[$name]);
+    }
+
+    /**
+     * Add a specific unique modifier. This will ignore all modifiers already set.
+     *
+     * @param string $modifier
+     * @return Builder
+     */
+    protected function addUniqueModifier(string $modifier) : self
+    {
+        if (strpos($this->modifier, $modifier) === false) {
+            $this->modifier .= $modifier;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Build the given Closure or string and append it to the current expression.
+     *
+     * @param Builder $builder
+     * @param Closure|Builder|string $conditions Either a closure, literal character string or another Builder instance.
+     * @return Builder
+     */
+    protected function addClosure(Builder $builder, $conditions) : self
+    {
+        if (is_string($conditions)) {
+            // Assuming literal characters if conditions are of type string
+            $builder->literally($conditions);
+        } elseif ($conditions instanceof Builder) {
+            $builder->raw($conditions->get(''));
+        } else {
+            $conditions($builder);
+        }
+
+        return $this->add($builder->get(''));
+    }
+
+    /**
+     * Get and remove last added element.
+     *
+     * @return string
+     */
+    protected function revertLast()
+    {
+        return array_pop($this->regEx);
+    }
+
+    /**********************************************************/
+    /*                     MAGIC METHODS                      */
+    /**********************************************************/
+
+    /**
+     * Try adding modifiers if their methods are defined in the modifierMapper attribute.
+     *
+     * @param $name
+     * @param $arguments
+     * @return Builder
+     * @throws ImplementationException
+     */
+    public function __call($name, $arguments) : self
+    {
+        if (isset($this->simpleMapper[$name])) {
+            // Simple mapper exists, add its character to the regex
+            return $this->addFromMapper($name);
+        }
+
+        if (isset($this->modifierMapper[$name])) {
+            // Modifier exists, add it
+            return $this->addUniqueModifier($this->modifierMapper[$name]);
+        }
+
+        throw new ImplementationException(sprintf(
+            'Call to undefined or invalid method %s:%s()',
+            get_class($this),
+            $name
+        ));
+    }
+
+    /**
+     * Build and return the resulting regular expression.
+     *
+     * @see \SRL\Builder::get() For more information.
+     * @return string The resulting regular expression.
+     */
+    public function __toString() : string
+    {
+        return $this->get();
     }
 }

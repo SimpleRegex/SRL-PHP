@@ -32,19 +32,20 @@ class BuilderTest extends TestCase
             ->eitherOf(function (Builder $query) {
                 $query->number()
                     ->letter()
-                    ->literally('._%+-');
+                    ->oneOf('._%+-');
             })->onceOrMore()
             ->literally('@')
             ->eitherOf(function (Builder $query) {
                 $query->number()
                     ->letter()
-                    ->literally('.-');
+                    ->oneOf('.-');
             })->onceOrMore()
             ->literally('.')
             ->letter()->atLeast(2)
             ->mustEnd()
             ->caseInsensitive(); // Not using get to test __toString() method
 
+        $this->assertTrue($regex->isValid());
         $this->assertEquals(1, preg_match($regex, 'sample@example.com'));
         $this->assertEquals(1, preg_match($regex, 'super-He4vy.add+ress@top-Le.ve1.domains'));
         $this->assertEquals(0, preg_match($regex, 'sample.example.com'));
@@ -80,10 +81,8 @@ class BuilderTest extends TestCase
         $matches = $query->getMatches('my favorite colour is green. And my favorite color: yellow.');
 
         $this->assertCount(2, $matches);
-        $this->assertEquals('green', $matches[0]->getMatch());
-        $this->assertEquals('yellow', $matches[1]->getMatch());
-        $this->assertEquals('color', $matches[0]->getName());
-        $this->assertEquals('color', $matches[1]->getName());
+        $this->assertEquals('green', $matches[0]->get('color'));
+        $this->assertEquals('yellow', $matches[1]->get('color'));
     }
 
     public function testReplace()
@@ -141,5 +140,10 @@ class BuilderTest extends TestCase
             ['sample,one', ' two', 'three'],
             SRL::literally(',')->twice()->whitespace()->optional()->lazy()->split('sample,one,, two,,three')
         );
+    }
+
+    public function testRaw()
+    {
+        $this->assertTrue(SRL::literally('foo')->raw('b[a-z]r')->isValid());
     }
 }

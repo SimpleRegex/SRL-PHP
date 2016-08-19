@@ -54,4 +54,13 @@ class ExceptionsTest extends TestCase
     {
         SRL::literally('foo')->lazy();
     }
+
+    /**
+     * @expectedException  \SRL\Exceptions\BuilderException
+     * @expectedExceptionMessage Adding raw would invalidate this regular expression. Reverted.
+     */
+    public function testInvalidRaw()
+    {
+        SRL::literally('foo')->raw('ba)r');
+    }
 }
