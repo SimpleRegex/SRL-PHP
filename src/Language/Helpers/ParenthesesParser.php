@@ -67,6 +67,7 @@ class ParenthesesParser
     {
         $openCount = $openPos = $closePos = 0;
         $inString = $backslash = false;
+        $stringPositions = [];
 
         for ($i = 0; $i < strlen($string); $i++) {
             $char = $string[$i];
@@ -76,6 +77,9 @@ class ParenthesesParser
                     // We're no more in the string. Either the ' or " was not escaped, or it was but the backslash
                     // before was escaped as well.
                     $inString = false;
+
+                    // Also, to create a "Literally" object later on, save the string end position.
+                    $stringPositions[count($stringPositions) - 1]['end'] = $i - 1;
                 }
                 continue;
             }
@@ -95,6 +99,8 @@ class ParenthesesParser
                 case "'":
                     // Set the string flag. This will tell the parser to skip over this string.
                     $inString = true;
+                    // Also, to create a "Literally" object later on, save the string start position.
+                    $stringPositions[] = ['start' => $i];
                     break;
                 case '(':
                     // Opening parenthesis, increase the count and set the pointer if it's the first one.
@@ -121,19 +127,67 @@ class ParenthesesParser
         }
 
         if ($closePos === 0) {
-            // No parentheses found. Return trimmed string.
-            return [trim($string)];
+            // No parentheses found. Use end of string
+            $openPos = $closePos = strlen($string);
         }
 
-        return array_values(array_filter(array_merge([
-            // First part is definitely without parentheses, since we'll match the first pair.
-            trim(substr($string, 0, $openPos)),
-            // This is the inner part of the parentheses pair. There may be some more nested pairs, so we'll check them.
-            $this->parseString(substr($string, $openPos + 1, $closePos - $openPos - 1)),
-            // Last part of the string wasn't checked at all, so we'll have to re-check it.
-        ], $this->parseString(substr($string, $closePos + 1)))/*, function ($val) {
-            // This callback is required to keep '0' in the response, since this may be a
+        $return = $this->createLiterallyObjects($string, $openPos, $stringPositions);
+
+        if ($openPos !== $closePos) {
+            // Parentheses found
+            $return = array_merge(
+                $return, // First part is definitely without parentheses, since we'll match the first pair.
+                // This is the inner part of the parentheses pair. There may be some more nested pairs, so we'll check them.
+                [$this->parseString(substr($string, $openPos + 1, $closePos - $openPos - 1))],
+                // Last part of the string wasn't checked at all, so we'll have to re-check it.
+                $this->parseString(substr($string, $closePos + 1))
+            );
+        }
+
+        return array_values(array_filter($return, function ($val) {
+            // This callback is required to keep '0' in the response, since this may be a parameter
             return !is_string($val) || strlen($val);
-        }*/));
+        }));
+    }
+
+    /**
+     * Replace all "literal strings" with a Literally object to simplify parsing later on.
+     *
+     * @param string $string
+     * @param int $openPos
+     * @param array $stringPositions
+     * @return array
+     */
+    protected function createLiterallyObjects(string $string, int $openPos, array $stringPositions) : array
+    {
+        $firstRaw = substr($string, 0, $openPos);
+        $return = [trim($firstRaw)];
+        $pointer = 0;
+
+        foreach ($stringPositions as $stringPosition) {
+            if ($stringPosition['end'] < strlen($firstRaw)) {
+                // At least one string exists in first part, create a new object.
+
+                // Remove the last part, since this wasn't parsed.
+                array_pop($return);
+
+                // Add part between pointer and string occurrence.
+                $return[] = trim(substr($firstRaw, $pointer, $stringPosition['start']));
+
+                // Add the string as object.
+                $return[] = new Literally(substr(
+                    $firstRaw,
+                    $stringPosition['start'] + 1,
+                    $stringPosition['end'] - $stringPosition['start']
+                ));
+
+                // Add everything else. If a string is in there, we'll take care of it in the next run.
+                $return[] = trim(substr($firstRaw, $stringPosition['end'] + 2));
+
+                $pointer = $stringPosition['end'];
+            }
+        }
+
+        return $return;
     }
 }
