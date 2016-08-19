@@ -30,11 +30,23 @@ class ParenthesesParserTest extends TestCase
         ], (new ParenthesesParser('foo (bar (nested)) baz'))->parse());
 
         $this->assertEquals([
+            'foo',
+            ['bar']
+        ], (new ParenthesesParser('foo (bar)'))->parse());
+
+        $this->assertEquals([
+            ['foo'],
+            'bar'
+        ], (new ParenthesesParser('(foo)bar'))->parse());
+
+        $this->assertEquals([
             'foo boo',
-            ['bar', ['nested']],
+            ['bar', ['nested'], 'something'],
             'baz',
             ['bar', ['foo foo']]
-        ], (new ParenthesesParser('foo boo (bar (nested)) baz (bar (foo foo))'))->parse());
+        ], (new ParenthesesParser('foo boo (bar (nested) something) baz (bar (foo foo))'))->parse());
+
+        $this->assertEquals(['foo', ['0']], (new ParenthesesParser('foo (0)'))->parse());
     }
 
     public function testEscaping()
@@ -60,9 +72,16 @@ class ParenthesesParserTest extends TestCase
         $this->assertEquals([
             'bar "b\\\"', ['la'], 'baz'
         ], $parser->setString('bar "b\\\" (la) baz')->parse());
+
+        $this->assertEquals([
+            'foo boo',
+            ['bar', ['nes"ted) s\"om\""'], 'ething'],
+            'baz',
+            ['bar', ['foo foo']]
+        ], (new ParenthesesParser('foo boo (bar (nes"ted) s\"om\"")ething) baz (bar (foo foo))'))->parse());
     }
 
-    public function testEmptyString()
+    public function testEmptyStrings()
     {
         $this->assertEquals([''], (new ParenthesesParser(''))->parse());
     }

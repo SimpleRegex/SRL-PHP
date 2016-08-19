@@ -121,16 +121,19 @@ class ParenthesesParser
         }
 
         if ($closePos === 0) {
-            // No parenthesis found. Return trimmed string.
+            // No parentheses found. Return trimmed string.
             return [trim($string)];
         }
 
-        return array_filter(array_merge([
+        return array_values(array_filter(array_merge([
             // First part is definitely without parentheses, since we'll match the first pair.
             trim(substr($string, 0, $openPos)),
-            // This is the inner part of the parentheses pair. Might be some more pairs, so we'll check.
+            // This is the inner part of the parentheses pair. There may be some more nested pairs, so we'll check them.
             $this->parseString(substr($string, $openPos + 1, $closePos - $openPos - 1)),
             // Last part of the string wasn't checked at all, so we'll have to re-check it.
-        ], $this->parseString(substr($string, $closePos + 1))));
+        ], $this->parseString(substr($string, $closePos + 1)))/*, function ($val) {
+            // This callback is required to keep '0' in the response, since this may be a
+            return !is_string($val) || strlen($val);
+        }*/));
     }
 }
