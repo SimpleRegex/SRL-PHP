@@ -84,4 +84,22 @@ class ExceptionsTest extends TestCase
         $parser = new ParenthesesParser('foo ) bar');
         $parser->parse();
     }
+
+    /**
+     * @expectedException  \SRL\Exceptions\ImplementationException
+     * @expectedExceptionMessage Method `onceOrMore` is not allowed at the beginning.
+     */
+    public function testInvalidMethodCallOne()
+    {
+        SRL::onceOrMore();
+    }
+
+    /**
+     * @expectedException  \SRL\Exceptions\ImplementationException
+     * @expectedExceptionMessage Method `neverOrMore` is not allowed after a quantifier.
+     */
+    public function testInvalidMethodCallTwo()
+    {
+        SRL::literally('foo')->twice()->neverOrMore();
+    }
 }

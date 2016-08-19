@@ -35,12 +35,22 @@ use SRL\Exceptions\PregException;
 class Builder
 {
     const NON_LITERAL_CHARACTERS = '[\\^$.|?*+()';
+    const METHOD_TYPE_BEGIN = 0b00001;
+    const METHOD_TYPE_CHARACTER = 0b00010;
+    const METHOD_TYPE_GROUP = 0b00100;
+    const METHOD_TYPE_QUANTIFIER = 0b01000;
+    const METHOD_TYPE_ANCHOR = 0b10000;
+    const METHOD_TYPE_UNKNOWN = 0b11111;
+    const METHOD_TYPES_ALLOWED_FOR_CHARACTERS = self::METHOD_TYPE_BEGIN | self::METHOD_TYPE_ANCHOR | self::METHOD_TYPE_GROUP | self::METHOD_TYPE_QUANTIFIER | self::METHOD_TYPE_CHARACTER;
 
     /** @var string[] RegEx being built. */
     protected $regEx = [];
 
     /** @var string Raw modifiers to apply on get(). */
     protected $modifier = '';
+
+    /** @var int Type of last method, to avoid invalid builds. */
+    protected $lastMethodType = self::METHOD_TYPE_BEGIN;
 
     /** @var string[] Map method names to actual modifiers. */
     protected $modifierMapper = [
@@ -54,17 +64,61 @@ class Builder
 
     /** @var string[] Map method names to simple 'add' conditions. */
     protected $simpleMapper = [
-        'startsWith' => '^',
-        'mustEnd' => '$',
-        'onceOrMore' => '+',
-        'neverOrMore' => '*',
-        'any' => '.',
-        'tab' => '\\t',
-        'newLine' => '\\n',
-        'whitespace' => '\s',
-        'noWhitespace' => '\S',
-        'anyLetter' => '\w',
-        'noLetter' => '\W'
+        'startsWith' => [
+            'add' => '^',
+            'type' => self::METHOD_TYPE_ANCHOR,
+            'allowed' => self::METHOD_TYPE_BEGIN
+        ],
+        'mustEnd' => [
+            'add' => '$',
+            'type' => self::METHOD_TYPE_ANCHOR,
+            'allowed' => self::METHOD_TYPE_CHARACTER | self::METHOD_TYPE_QUANTIFIER | self::METHOD_TYPE_GROUP
+        ],
+        'onceOrMore' => [
+            'add' => '+',
+            'type' => self::METHOD_TYPE_QUANTIFIER,
+            'allowed' => self::METHOD_TYPE_CHARACTER | self::METHOD_TYPE_GROUP
+        ],
+        'neverOrMore' => [
+            'add' => '*',
+            'type' => self::METHOD_TYPE_QUANTIFIER,
+            'allowed' => self::METHOD_TYPE_CHARACTER | self::METHOD_TYPE_GROUP
+        ],
+        'any' => [
+            'add' => '.',
+            'type' => self::METHOD_TYPE_CHARACTER,
+            'allowed' => self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS
+        ],
+        'tab' => [
+            'add' => '\\t',
+            'type' => self::METHOD_TYPE_CHARACTER,
+            'allowed' => self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS
+        ],
+        'newLine' => [
+            'add' => '\\n',
+            'type' => self::METHOD_TYPE_CHARACTER,
+            'allowed' => self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS
+        ],
+        'whitespace' => [
+            'add' => '\s',
+            'type' => self::METHOD_TYPE_CHARACTER,
+            'allowed' => self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS
+        ],
+        'noWhitespace' => [
+            'add' => '\S',
+            'type' => self::METHOD_TYPE_CHARACTER,
+            'allowed' => self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS
+        ],
+        'anyLetter' => [
+            'add' => '\w',
+            'type' => self::METHOD_TYPE_CHARACTER,
+            'allowed' => self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS
+        ],
+        'noLetter' => [
+            'add' => '\W',
+            'type' => self::METHOD_TYPE_CHARACTER,
+            'allowed' => self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS
+        ]
     ];
 
     /** @var string Desired group, if any. */
@@ -86,6 +140,8 @@ class Builder
      */
     public function raw(string $regularExpression) : self
     {
+        $this->lastMethodType = self::METHOD_TYPE_UNKNOWN;
+
         $this->add($regularExpression);
 
         if (!$this->isValid()) {
@@ -104,6 +160,8 @@ class Builder
      */
     public function oneOf(string $chars)
     {
+        $this->validateAndAddMethodType(self::METHOD_TYPE_CHARACTER, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
+
         return $this->add('[' . implode('', array_map([$this, 'escape'], str_split($chars))) . ']');
     }
 
@@ -115,6 +173,8 @@ class Builder
      */
     public function literally(string $chars) : self
     {
+        $this->validateAndAddMethodType(self::METHOD_TYPE_CHARACTER, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
+
         return $this->add(implode('', array_map([$this, 'escape'], str_split($chars))));
     }
 
@@ -127,6 +187,8 @@ class Builder
      */
     public function number(int $min = 0, int $max = 9) : self
     {
+        $this->validateAndAddMethodType(self::METHOD_TYPE_CHARACTER, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
+
         return $this->add("[$min-$max]");
     }
 
@@ -151,6 +213,8 @@ class Builder
      */
     public function letter(string $min = 'a', string $max = 'z') : self
     {
+        $this->validateAndAddMethodType(self::METHOD_TYPE_CHARACTER, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
+
         return $this->add("[$min-$max]");
     }
 
@@ -166,6 +230,8 @@ class Builder
      */
     public function eitherOf($conditions) : self
     {
+        $this->validateAndAddMethodType(self::METHOD_TYPE_GROUP, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
+
         return $this->addClosure(new EitherOf, $conditions);
     }
 
@@ -177,6 +243,8 @@ class Builder
      */
     public function and ($conditions) : self
     {
+        $this->validateAndAddMethodType(self::METHOD_TYPE_GROUP, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
+
         return $this->addClosure(new Builder, $conditions);
     }
 
@@ -188,6 +256,8 @@ class Builder
      */
     public function ifAlreadyHad($conditions) : self
     {
+        $this->validateAndAddMethodType(self::METHOD_TYPE_GROUP, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
+
         $condition = $this->revertLast();
 
         $this->addClosure(new PositiveLookbehind, $conditions);
@@ -203,6 +273,8 @@ class Builder
      */
     public function ifNotAlreadyHad($conditions) : self
     {
+        $this->validateAndAddMethodType(self::METHOD_TYPE_GROUP, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
+
         $condition = $this->revertLast();
 
         $this->addClosure(new NegativeLookbehind, $conditions);
@@ -218,6 +290,8 @@ class Builder
      */
     public function ifFollowedBy($conditions) : self
     {
+        $this->validateAndAddMethodType(self::METHOD_TYPE_GROUP, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
+
         return $this->addClosure(new PositiveLookahead, $conditions);
     }
 
@@ -229,6 +303,8 @@ class Builder
      */
     public function ifNotFollowedBy($conditions) : self
     {
+        $this->validateAndAddMethodType(self::METHOD_TYPE_GROUP, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
+
         return $this->addClosure(new NegativeLookahead, $conditions);
     }
 
@@ -241,6 +317,8 @@ class Builder
      */
     public function capture($conditions, string $name = null) : self
     {
+        $this->validateAndAddMethodType(self::METHOD_TYPE_GROUP, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
+
         $builder = new Capture;
 
         if ($name) {
@@ -262,6 +340,8 @@ class Builder
      */
     public function optional(string $chars = null) : self
     {
+        $this->validateAndAddMethodType(self::METHOD_TYPE_QUANTIFIER, self::METHOD_TYPE_CHARACTER | self::METHOD_TYPE_GROUP);
+
         if (!$chars) {
             return $this->add('?');
         }
@@ -278,6 +358,8 @@ class Builder
      */
     public function between(int $min, int $max) : self
     {
+        $this->validateAndAddMethodType(self::METHOD_TYPE_QUANTIFIER, self::METHOD_TYPE_CHARACTER | self::METHOD_TYPE_GROUP);
+
         return $this->add(sprintf('{%d,%d}', $min, $max));
     }
 
@@ -289,6 +371,8 @@ class Builder
      */
     public function atLeast(int $min) : self
     {
+        $this->validateAndAddMethodType(self::METHOD_TYPE_QUANTIFIER, self::METHOD_TYPE_CHARACTER | self::METHOD_TYPE_GROUP);
+
         return $this->add(sprintf('{%d,}', $min));
     }
 
@@ -320,6 +404,8 @@ class Builder
      */
     public function exactly(int $count) : self
     {
+        $this->validateAndAddMethodType(self::METHOD_TYPE_QUANTIFIER, self::METHOD_TYPE_CHARACTER | self::METHOD_TYPE_GROUP);
+
         return $this->add(sprintf('{%d}', $count));
     }
 
@@ -331,6 +417,8 @@ class Builder
      */
     public function lazy() : self
     {
+        $this->lastMethodType = self::METHOD_TYPE_QUANTIFIER;
+
         if (strpos('+*}?', substr($this->getRawRegex(), -1)) === false) {
             if (substr(end($this->regEx), -1) === ')') {
                 return $this->add(substr($this->revertLast(), 0, -1) . '?)');
@@ -354,6 +442,8 @@ class Builder
             $this->lazy();
         } catch (ImplementationException $e) {
         }
+
+        $this->validateAndAddMethodType(self::METHOD_TYPE_GROUP, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
 
         return $this->addClosure(new self, $toCondition);
     }
@@ -525,6 +615,48 @@ class Builder
     }
 
     /**
+     * Validate method call. This will throw an exception if the called method makes no sense at this point.
+     * Will add the current type as the last method type.
+     *
+     * @param int $type
+     * @param int $allowed
+     * @param string|null $methodName Optional. If not supplied, the calling method name will be used.
+     * @throws ImplementationException
+     */
+    protected function validateAndAddMethodType(int $type, int $allowed, string $methodName = null)
+    {
+        if ($allowed & $this->lastMethodType) {
+            $this->lastMethodType = $type;
+
+            return;
+        }
+
+        switch ($this->lastMethodType) {
+            case self::METHOD_TYPE_BEGIN:
+                $humanText = 'at the beginning';
+                break;
+            case self::METHOD_TYPE_CHARACTER:
+                $humanText = 'after a literal character';
+                break;
+            case self::METHOD_TYPE_GROUP:
+                $humanText = 'after a group';
+                break;
+            case self::METHOD_TYPE_QUANTIFIER:
+                $humanText = 'after a quantifier';
+                break;
+            case self::METHOD_TYPE_ANCHOR:
+                $humanText = 'after an anchor';
+                break;
+        }
+
+        throw new ImplementationException(sprintf(
+            'Method `%s` is not allowed %s.',
+            $methodName ?? debug_backtrace()[1]['function'],
+            $humanText ?? 'here'
+        ));
+    }
+
+    /**
      * Add the value from the simple mapper array to the regular expression.
      *
      * @param string $name
@@ -537,7 +669,13 @@ class Builder
             throw new BuilderException('Unknown mapper.');
         }
 
-        return $this->add($this->simpleMapper[$name]);
+        $this->validateAndAddMethodType(
+            $this->simpleMapper[$name]['type'],
+            $this->simpleMapper[$name]['allowed'],
+            $name
+        );
+
+        return $this->add($this->simpleMapper[$name]['add']);
     }
 
     /**
