@@ -2,22 +2,24 @@
 
 namespace SRL\Language;
 
-use SRL\Language\Helpers\ParenthesisParser;
+use SRL\Language\Helpers\ParenthesesParser;
 
 class Interpreter
 {
     /** @var string */
     protected $query;
 
+    /** @var string[] */
+    protected $resolvedQuery = [];
+
     public function __construct(string $query)
     {
         $this->query = $query;
-        $this->parse();
+        $this->resolve();
     }
 
-    protected function parse()
+    protected function resolve()
     {
-        $p = new ParenthesisParser($this->query);
-        var_dump($p->getNesting());
+        $this->resolvedQuery = (new ParenthesesParser($this->query))->parse();
     }
 }

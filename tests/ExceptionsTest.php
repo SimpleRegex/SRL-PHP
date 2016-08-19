@@ -4,6 +4,7 @@ namespace Tests;
 
 use ReflectionClass;
 use SRL\Builder;
+use SRL\Language\Helpers\ParenthesesParser;
 use SRL\SRL;
 
 class ExceptionsTest extends TestCase
@@ -62,5 +63,25 @@ class ExceptionsTest extends TestCase
     public function testInvalidRaw()
     {
         SRL::literally('foo')->raw('ba)r');
+    }
+
+    /**
+     * @expectedException  \SRL\Exceptions\SyntaxException
+     * @expectedExceptionMessage Non-matching parenthesis found.
+     */
+    public function testInvalidParenthesis()
+    {
+        $parser = new ParenthesesParser('foo ( bar');
+        $parser->parse();
+    }
+
+    /**
+     * @expectedException  \SRL\Exceptions\SyntaxException
+     * @expectedExceptionMessage Non-matching parenthesis found.
+     */
+    public function testOtherInvalidParenthesis()
+    {
+        $parser = new ParenthesesParser('foo ) bar');
+        $parser->parse();
     }
 }
