@@ -53,7 +53,7 @@ class ExceptionsTest extends TestCase
      */
     public function testInvalidLaziness()
     {
-        SRL::literally('foo')->lazy();
+        SRL::literally('foo')->firstMatch();
     }
 
     /**

@@ -11,7 +11,7 @@ use SRL\Builder\PositiveLookahead;
 use SRL\Builder\PositiveLookbehind;
 use SRL\Exceptions\BuilderException;
 use SRL\Exceptions\ImplementationException;
-use SRL\Exceptions\PregException;
+use SRL\Interfaces\TestMethodProvider;
 
 /**
  * @method $this all() Apply the 'g' modifier
@@ -32,7 +32,7 @@ use SRL\Exceptions\PregException;
  * @method $this anyLetter() Match any word character.
  * @method $this noLetter() Match any non-word character.
  */
-class Builder
+class Builder extends TestMethodProvider
 {
     const NON_LITERAL_CHARACTERS = '[\\^$.|?*+()';
     const METHOD_TYPE_BEGIN = 0b00001;
@@ -47,7 +47,7 @@ class Builder
     protected $regEx = [];
 
     /** @var string Raw modifiers to apply on get(). */
-    protected $modifier = '';
+    protected $modifiers = '';
 
     /** @var int Type of last method, to avoid invalid builds. */
     protected $lastMethodType = self::METHOD_TYPE_BEGIN;
@@ -410,12 +410,22 @@ class Builder
     }
 
     /**
+     * Get the first match instead of the last one (lazy).
+     *
+     * @return Builder
+     */
+    public function lazy() : self
+    {
+        return $this->firstMatch();
+    }
+
+    /**
      * Apply laziness to last match.
      *
      * @return Builder
      * @throws ImplementationException
      */
-    public function lazy() : self
+    public function firstMatch() : self
     {
         $this->lastMethodType = self::METHOD_TYPE_QUANTIFIER;
 
@@ -449,134 +459,6 @@ class Builder
     }
 
     /**********************************************************/
-    /*                      TEST METHODS                      */
-    /**********************************************************/
-
-    /**
-     * Build and return the resulting regular expression. This will apply the given delimiter and all modifiers.
-     *
-     * @param string $delimiter The delimiter to use. Defaults to '/'. If left empty, avoid using modifiers,
-     *                          since they then will be ignored.
-     * @return string The resulting regular expression.
-     */
-    public function get(string $delimiter = '/') : string
-    {
-        if (empty($delimiter)) {
-            return $this->getRawRegex();
-        }
-
-        return sprintf(
-            '%s%s%s%s',
-            $delimiter,
-            str_replace($delimiter, '\\' . $delimiter, $this->getRawRegex()),
-            $delimiter,
-            $this->modifier
-        );
-    }
-
-    /**
-     * Test if regular expression matches given string.
-     *
-     * @see preg_match()
-     * @param string $string
-     * @param int $flags
-     * @param int $offset
-     * @return bool
-     * @throws PregException
-     */
-    public function isMatching(string $string, int $flags = 0, int $offset = 0) : bool
-    {
-        $result = preg_match($this->get(), $string, $matches, $flags, $offset);
-
-        if ($result === false) {
-            throw new PregException(preg_last_error());
-        }
-
-        return $result !== 0;
-    }
-
-    /**
-     * Apply preg_replace with the regular expression.
-     *
-     * @see preg_replace()
-     * @see preg_replace_callback()
-     * @param string|array|Closure $replacement If a callback is supplied, preg_replace_callback will be called.
-     * @param string|array $haystack
-     * @param int $limit
-     * @param null $count
-     * @return string|array
-     */
-    public function replace($replacement, $haystack, int $limit = -1, &$count = null)
-    {
-        if (is_callable($replacement)) {
-            return preg_replace_callback($this->get(), $replacement, $haystack, $limit, $count);
-        }
-
-        return preg_replace($this->get(), $replacement, $haystack, $limit, $count);
-    }
-
-    /**
-     * Apply preg_split with the regular expression.
-     *
-     * @param string $string
-     * @param int $limit
-     * @param int $flags
-     * @return array
-     */
-    public function split(string $string, int $limit = -1, int $flags = 0) : array
-    {
-        return preg_split($this->get(), $string, $limit, $flags);
-    }
-
-    /**
-     * Apply preg_filter with the regular expression.
-     *
-     * @see preg_filter()
-     * @param string|array $replacement
-     * @param string|array $haystack
-     * @param int $limit
-     * @param null $count
-     * @return string|array
-     */
-    public function filter($replacement, $haystack, int $limit = -1, &$count = null)
-    {
-        return preg_filter($this->get(), $replacement, $haystack, $limit, $count);
-    }
-
-    /**
-     * Match regular expression against string and return all matches.
-     *
-     * @param string $string
-     * @param int $offset
-     * @return Match[]|array
-     * @throws PregException
-     */
-    public function getMatches(string $string, int $offset = 0) : array
-    {
-        if (preg_match_all($this->get(), $string, $matches, PREG_SET_ORDER, $offset) === false) {
-            throw new PregException(preg_last_error());
-        }
-
-        $matchObjects = [];
-
-        foreach ($matches as $match) {
-            $matchObjects[] = new Match($match);
-        }
-
-        return $matchObjects;
-    }
-
-    /**
-     * Validate regular expression.
-     *
-     * @return bool
-     */
-    public function isValid() : bool
-    {
-        return @preg_match($this->get(), null) !== false;
-    }
-
-    /**********************************************************/
     /*                   INTERNAL METHODS                     */
     /**********************************************************/
 
@@ -599,6 +481,16 @@ class Builder
     protected function getRawRegex() : string
     {
         return sprintf($this->group, implode($this->implodeString, $this->regEx));
+    }
+
+    /**
+     * Get all set modifiers.
+     *
+     * @return string
+     */
+    public function getModifiers() : string
+    {
+        return $this->modifiers;
     }
 
     /**
@@ -686,8 +578,8 @@ class Builder
      */
     protected function addUniqueModifier(string $modifier) : self
     {
-        if (strpos($this->modifier, $modifier) === false) {
-            $this->modifier .= $modifier;
+        if (strpos($this->modifiers, $modifier) === false) {
+            $this->modifiers .= $modifier;
         }
 
         return $this;

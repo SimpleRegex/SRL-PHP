@@ -9,6 +9,7 @@ class LanguageInterpreterTest extends TestCase
 {
     public function testParser()
     {
-        new SRL('foo (bar (baz) boo) ba bi');
+        $srl = new SRL('aNy Letter ONCE or more literAlly "fOo"');
+        $this->assertEquals('/\w+fOo/', $srl->get());
     }
 }

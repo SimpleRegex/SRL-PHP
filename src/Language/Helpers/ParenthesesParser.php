@@ -68,8 +68,9 @@ class ParenthesesParser
         $openCount = $openPos = $closePos = 0;
         $inString = $backslash = false;
         $stringPositions = [];
+        $stringLength = strlen($string);
 
-        for ($i = 0; $i < strlen($string); $i++) {
+        for ($i = 0; $i < $stringLength; $i++) {
             $char = $string[$i];
 
             if ($inString) {
@@ -128,7 +129,7 @@ class ParenthesesParser
 
         if ($closePos === 0) {
             // No parentheses found. Use end of string
-            $openPos = $closePos = strlen($string);
+            $openPos = $closePos = $stringLength;
         }
 
         $return = $this->createLiterallyObjects($string, $openPos, $stringPositions);
