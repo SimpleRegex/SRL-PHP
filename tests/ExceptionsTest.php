@@ -86,6 +86,16 @@ class ExceptionsTest extends TestCase
     }
 
     /**
+     * @expectedException  \SRL\Exceptions\SyntaxException
+     * @expectedExceptionMessage Invalid string ending found.
+     */
+    public function testInvalidStringEnding()
+    {
+        $parser = new ParenthesesParser('foo "bar');
+        $parser->parse();
+    }
+
+    /**
      * @expectedException  \SRL\Exceptions\ImplementationException
      * @expectedExceptionMessage Method `onceOrMore` is not allowed at the beginning.
      */

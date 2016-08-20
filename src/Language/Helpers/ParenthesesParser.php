@@ -73,7 +73,7 @@ class ParenthesesParser
             $char = $string[$i];
 
             if ($inString) {
-                if (($char === '"' || $char === "'") && ($string[$i - 1] != '\\' || ($string[$i - 1] === '\\' && $string[$i - 2] === '\\'))) {
+                if ($char === $inString && ($string[$i - 1] != '\\' || ($string[$i - 1] === '\\' && $string[$i - 2] === '\\'))) {
                     // We're no more in the string. Either the ' or " was not escaped, or it was but the backslash
                     // before was escaped as well.
                     $inString = false;
@@ -98,7 +98,7 @@ class ParenthesesParser
                 case '"':
                 case "'":
                     // Set the string flag. This will tell the parser to skip over this string.
-                    $inString = true;
+                    $inString = $char;
                     // Also, to create a "Literally" object later on, save the string start position.
                     $stringPositions[] = ['start' => $i];
                     break;
@@ -157,6 +157,7 @@ class ParenthesesParser
      * @param int $openPos
      * @param array $stringPositions
      * @return array
+     * @throws SyntaxException
      */
     protected function createLiterallyObjects(string $string, int $openPos, array $stringPositions) : array
     {
@@ -165,6 +166,10 @@ class ParenthesesParser
         $pointer = 0;
 
         foreach ($stringPositions as $stringPosition) {
+            if (!isset($stringPosition['end'])) {
+                throw new SyntaxException('Invalid string ending found.');
+            }
+
             if ($stringPosition['end'] < strlen($firstRaw)) {
                 // At least one string exists in first part, create a new object.
 
@@ -172,7 +177,7 @@ class ParenthesesParser
                 array_pop($return);
 
                 // Add part between pointer and string occurrence.
-                $return[] = trim(substr($firstRaw, $pointer, $stringPosition['start']));
+                $return[] = trim(substr($firstRaw, $pointer, $stringPosition['start'] - $pointer));
 
                 // Add the string as object.
                 $return[] = new Literally(substr(
@@ -184,7 +189,7 @@ class ParenthesesParser
                 // Add everything else. If a string is in there, we'll take care of it in the next run.
                 $return[] = trim(substr($firstRaw, $stringPosition['end'] + 2));
 
-                $pointer = $stringPosition['end'];
+                $pointer = $stringPosition['end'] + 2;
             }
         }
 
