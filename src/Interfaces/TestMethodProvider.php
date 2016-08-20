@@ -5,6 +5,10 @@ namespace SRL\Interfaces;
 use SRL\Exceptions\PregException;
 use SRL\Match;
 
+/**
+ * Provider for methods that can be applied to the built regular expression by the user.
+ * Shared by Builder and Language\Interpreter.
+ */
 abstract class TestMethodProvider
 {
     /**

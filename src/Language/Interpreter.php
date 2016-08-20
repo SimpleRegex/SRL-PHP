@@ -5,75 +5,96 @@ namespace SRL\Language;
 use SRL\Builder;
 use SRL\Exceptions\InterpreterException;
 use SRL\Exceptions\SyntaxException;
+use SRL\Interfaces\Method;
 use SRL\Interfaces\TestMethodProvider;
 use SRL\Language\Helpers\Literally;
 use SRL\Language\Helpers\Matcher;
-use SRL\Language\Helpers\Method;
 use SRL\Language\Helpers\ParenthesesParser;
 
+/**
+ * Interpreter for string commands in SRL style.
+ */
 class Interpreter extends TestMethodProvider
 {
-    /** @var string */
-    protected $query;
+    /** @var string The raw SRL query. */
+    protected $rawQuery;
 
-    /** @var string[] */
+    /** @var string[] The resolved but not executed SRL query. */
     protected $resolvedQuery = [];
 
     /** @var Matcher */
     protected $matcher;
 
-    /** @var Builder */
+    /** @var Builder The resolved and executed SRL query. */
     protected $builder;
 
     public function __construct(string $query)
     {
-        $this->query = trim($query);
+        $this->rawQuery = trim($query);
         $this->matcher = Matcher::getInstance();
 
         $this->build();
     }
 
+    /**
+     * Resolve and then build the query.
+     */
     public function build()
     {
         $this->resolve();
 
-        $this->builder = $this->buildQuery($this->resolvedQuery);
+        $this->builder = static::buildQuery($this->resolvedQuery);
     }
 
+    /**
+     * Resolve the string array using the ParenthesesParser
+     */
     protected function resolve()
     {
-        $this->resolvedQuery = $this->resolveQuery((new ParenthesesParser($this->query))->parse());
+        $this->resolvedQuery = $this->resolveQuery((new ParenthesesParser($this->rawQuery))->parse());
     }
 
+    /**
+     * Resolve the query array recursively and insert Methods.
+     *
+     * @param array $query
+     * @return array
+     * @throws InterpreterException
+     */
     protected function resolveQuery(array $query) : array
     {
-        // Using for, since the array will be altered. Foreach would change behaviour
+        // Using for, since the array will be altered. Foreach would change behaviour.
         for ($i = 0; $i < count($query); $i++) {
             if (is_string($query[$i])) {
-                try {
-                    $method = $this->matcher->match($query[$i]);
-                    $leftOver = str_ireplace($method->getOriginal(), '', $query[$i]);
-                    $query[$i] = $method;
-                    if (!empty($leftOver)) {
-                        array_splice($query, $i + 1, 0, trim($leftOver));
-                    }
-                } catch (SyntaxException $e) {
-                    // TODO: May be a parameter
+                // A string can be interpreted as a method. Let's try resolving the method then.
+                $method = $this->matcher->match($query[$i]);
+
+                // If anything was left over (for example parameters), grab them and insert them.
+                $leftOver = str_ireplace($method->getOriginal(), '', $query[$i]);
+                $query[$i] = $method;
+                if (!empty($leftOver)) {
+                    array_splice($query, $i + 1, 0, trim($leftOver));
                 }
             } elseif (is_array($query[$i])) {
-                // TODO
-                $query[$i] = $this->resolvePart($query[$i]);
-            } elseif ($query[$i] instanceof Literally) {
-                // TODO
-            } else {
-                throw new InterpreterException('Invalid type of part.');
+                // Nested query found. Resolve it as well.
+                $query[$i] = $this->resolveQuery($query[$i]);
+            } elseif (!$query[$i] instanceof Literally) {
+                throw new InterpreterException('Unexpected statement: ' . json_encode($query[$i]));
             }
         }
 
         return $query;
     }
 
-    protected function buildQuery(array $query, Builder $builder = null) : Builder
+    /**
+     * After the query was resolved, it can be built and thus executed.
+     *
+     * @param array $query
+     * @param Builder|null $builder If no Builder is given, the default Builder will be taken.
+     * @return Builder
+     * @throws SyntaxException
+     */
+    public static function buildQuery(array $query, Builder $builder = null) : Builder
     {
         $builder = $builder ?: new Builder;
 
@@ -81,26 +102,30 @@ class Interpreter extends TestMethodProvider
             $method = $query[$i];
 
             if (!$method instanceof Method) {
-                // At this point, there should only be methods, since all parameters are already taken care of.
+                // At this point, there should only be methods left, since all parameters are already taken care of.
                 // If that's not the case, something didn't work out.
                 throw new SyntaxException("Unexpected keyword: `$method`");
             }
 
-            // Get all required parameters for the method from the current query.
-            $parameters = array_splice($query, $i + 1, $method->getParameterCount());
+            $parameters = [];
+            // If there are parameters, walk through them and apply them if they don't start a new method.
+            while (isset($query[$i + 1]) && !($query[$i + 1] instanceof Method)) {
+                if (is_string($query[$i + 1])) {
+                    // Make sure additional string parameters are split up into chunks.
+                    $parameters = array_merge($parameters, array_map('trim', explode(' ', $query[$i + 1])));
+                } else {
+                    // Literally or array should not be split.
+                    $parameters[] = $query[$i + 1];
+                }
 
-            // If there are optional parameters, walk through them and apply them if they don't start a new method.
-            for (
-                $j = 0;
-                $j < $method->getOptionalParameterCount() && isset($query[$i + 1]) && !($query[$i + 1] instanceof Method);
-                $j++
-            ) {
-                $parameters[] = $query[$i + 1];
-                array_splice($query, $i + 1, 1); // don't unset to keep keys incrementing
+                // Since the parameters will be appended to the method object, they are already parsed and can be
+                // removed from further parsing. Don't use unset to keep keys incrementing.
+                array_splice($query, $i + 1, 1);
             }
 
-            // Now, append that method to the builder object
-            $method->callMethodOn($builder, $parameters);
+            // Now, append that method to the builder object.
+            $method->setParameters($parameters);
+            $method->callMethodOn($builder);
         }
 
         return $builder;
@@ -121,5 +146,4 @@ class Interpreter extends TestMethodProvider
     {
         return $this->builder->getModifiers();
     }
-
 }

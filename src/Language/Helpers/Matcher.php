@@ -3,41 +3,41 @@
 namespace SRL\Language\Helpers;
 
 use SRL\Exceptions\SyntaxException;
+use SRL\Interfaces\Method;
+use SRL\Language\Methods;
 
 class Matcher
 {
     /** @var static */
     protected static $instance;
 
-    /** @var string[] Contains all possible commands. Initialized with commands without parameters. */
+    /** @var string[] Contains all possible commands. */
     protected $mapper = [
-        'any letter' => ['params' => 0, 'method' => 'anyLetter'],
-        'no letter' => ['params' => 0, 'method' => 'noLetter'],
-        'multi line' => ['params' => 0, 'method' => 'multiLine'],
-        'single line' => ['params' => 0, 'method' => 'singleLine'],
-        'case insensitive' => ['params' => 0, 'method' => 'caseInsensitive'],
-        'all lazy' => ['params' => 0, 'method' => 'allLazy'],
-        'starts with' => ['params' => 0, 'method' => 'startsWith'],
-        'must end' => ['params' => 0, 'method' => 'mustEnd'],
-        'once or more' => ['params' => 0, 'method' => 'onceOrMore'],
-        'never or more' => ['params' => 0, 'method' => 'neverOrMore'],
-        'new line' => ['params' => 0, 'method' => 'newLine'],
-        'whitespace' => ['params' => 0, 'method' => 'whitespace'],
-        'no whitespace' => ['params' => 0, 'method' => 'noWhitespace'],
-        'all' => ['params' => 0, 'method' => 'all'],
-        'any' => ['params' => 0, 'method' => 'any'],
-        'tab' => ['params' => 0, 'method' => 'tab'],
-        'unicode' => ['params' => 0, 'method' => 'unicode'],
-        'literally' => ['params' => 1, 'method' => 'literally']
+        'any letter' => ['class' => Methods\SimpleMethod::class, 'method' => 'anyLetter'],
+        'no letter' => ['class' => Methods\SimpleMethod::class, 'method' => 'noLetter'],
+        'multi line' => ['class' => Methods\SimpleMethod::class, 'method' => 'multiLine'],
+        'single line' => ['class' => Methods\SimpleMethod::class, 'method' => 'singleLine'],
+        'case insensitive' => ['class' => Methods\SimpleMethod::class, 'method' => 'caseInsensitive'],
+        'all lazy' => ['class' => Methods\SimpleMethod::class, 'method' => 'allLazy'],
+        'starts with' => ['class' => Methods\SimpleMethod::class, 'method' => 'startsWith'],
+        'must end' => ['class' => Methods\SimpleMethod::class, 'method' => 'mustEnd'],
+        'once or more' => ['class' => Methods\SimpleMethod::class, 'method' => 'onceOrMore'],
+        'never or more' => ['class' => Methods\SimpleMethod::class, 'method' => 'neverOrMore'],
+        'new line' => ['class' => Methods\SimpleMethod::class, 'method' => 'newLine'],
+        'whitespace' => ['class' => Methods\SimpleMethod::class, 'method' => 'whitespace'],
+        'no whitespace' => ['class' => Methods\SimpleMethod::class, 'method' => 'noWhitespace'],
+        'all' => ['class' => Methods\SimpleMethod::class, 'method' => 'all'],
+        'any' => ['class' => Methods\SimpleMethod::class, 'method' => 'any'],
+        'tab' => ['class' => Methods\SimpleMethod::class, 'method' => 'tab'],
+        'unicode' => ['class' => Methods\SimpleMethod::class, 'method' => 'unicode'],
+        'literally' => ['class' => Methods\DefaultMethod::class, 'method' => 'literally'],
+        'either of' => ['class' => Methods\DefaultMethod::class, 'method' => 'eitherOf'],
+        // TODO: Not all methods supported
     ];
 
-    protected function __construct()
-    {
-        // Initialize additional commands with parameter regular expressions
-        // TODO
-    }
-
     /**
+     * Get matcher instance. Since this matcher contains static functionality, we'll use a singleton.
+     *
      * @return Matcher
      */
     public static function getInstance() : self
@@ -46,18 +46,23 @@ class Matcher
     }
 
     /**
+     * Match a string part to a method. Please note that the string must start with a method.
+     *
      * @param string $part
      * @return Method
-     * @throws SyntaxException
+     * @throws SyntaxException If no method was found, a SyntaxException will be thrown.
      */
     public function match(string $part) : Method
     {
         $maxMatchCount = 0;
 
+        // Go through each mapper and check if the name matches. Then, take the highest match to avoid matching
+        // 'any', if 'any letter' was given, and so on.
         foreach ($this->mapper as $key => $value) {
             $matches = [];
             preg_match_all('/^(' . str_replace(' ', ') (', $key) . ')/i', $part, $matches, PREG_SET_ORDER);
             $count = empty($matches) ? 0 : count($matches[0]);
+
             if ($count > $maxMatchCount) {
                 $maxMatchCount = $count;
                 $maxMatch = $key;
@@ -65,9 +70,10 @@ class Matcher
         }
 
         if (isset($maxMatch)) {
+            // We've got a match. Create the desired object and populate it.
             $method = $this->mapper[$maxMatch];
 
-            return new Method($maxMatch, $method['method'], $method['params'], $method['optional'] ?? 0);
+            return new $method['class']($maxMatch, $method['method']);
         }
 
         throw new SyntaxException("Invalid method: `$part`");

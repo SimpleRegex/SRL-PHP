@@ -128,14 +128,14 @@ class ParenthesesParser
         }
 
         if ($closePos === 0) {
-            // No parentheses found. Use end of string
+            // No parentheses found. Use end of string.
             $openPos = $closePos = $stringLength;
         }
 
         $return = $this->createLiterallyObjects($string, $openPos, $stringPositions);
 
         if ($openPos !== $closePos) {
-            // Parentheses found
+            // Parentheses found.
             $return = array_merge(
                 $return, // First part is definitely without parentheses, since we'll match the first pair.
                 // This is the inner part of the parentheses pair. There may be some more nested pairs, so we'll check them.
@@ -146,7 +146,7 @@ class ParenthesesParser
         }
 
         return array_values(array_filter($return, function ($val) {
-            // This callback is required to keep '0' in the response, since this may be a parameter
+            // This callback is required to keep '0' in the response, since this may be a parameter.
             return !is_string($val) || strlen($val);
         }));
     }
