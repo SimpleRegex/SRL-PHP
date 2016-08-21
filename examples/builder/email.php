@@ -3,7 +3,7 @@
 use SRL\Builder;
 use SRL\SRL;
 
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 $regex = SRL::startsWith()
     ->eitherOf(function (Builder $query) {

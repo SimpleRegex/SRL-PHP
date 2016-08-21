@@ -10,6 +10,7 @@ use SRL\Interfaces\TestMethodProvider;
 use SRL\Language\Helpers\Literally;
 use SRL\Language\Helpers\Matcher;
 use SRL\Language\Helpers\ParenthesesParser;
+use SRL\Language\Methods\DefaultMethod;
 
 /**
  * Interpreter for string commands in SRL style.
@@ -66,14 +67,30 @@ class Interpreter extends TestMethodProvider
         // Using for, since the array will be altered. Foreach would change behaviour.
         for ($i = 0; $i < count($query); $i++) {
             if (is_string($query[$i])) {
-                // A string can be interpreted as a method. Let's try resolving the method then.
-                $method = $this->matcher->match($query[$i]);
+                // Remove commas and remove item if empty.
+                $query[$i] = str_replace(',', '', $query[$i]);
+                if (empty($query[$i])) {
+                    array_splice($query, $i, 0);
+                    continue;
+                }
 
-                // If anything was left over (for example parameters), grab them and insert them.
-                $leftOver = str_ireplace($method->getOriginal(), '', $query[$i]);
-                $query[$i] = $method;
-                if (!empty($leftOver)) {
-                    array_splice($query, $i + 1, 0, trim($leftOver));
+                try {
+                    // A string can be interpreted as a method. Let's try resolving the method then.
+                    $method = $this->matcher->match($query[$i]);
+
+                    // If anything was left over (for example parameters), grab them and insert them.
+                    $leftOver = str_ireplace($method->getOriginal(), '', $query[$i]);
+                    $query[$i] = $method;
+                    if (!empty($leftOver)) {
+                        array_splice($query, $i + 1, 0, trim($leftOver));
+                    }
+                } catch (SyntaxException $e) {
+                    // There could be some parameters, so we'll split them and try to parse them again
+                    $split = explode(' ', $query[$i], 2);
+                    $query[$i] = trim($split[0]);
+                    if (isset($split[1])) {
+                        array_splice($query, $i + 1, 0, trim($split[1]));
+                    }
                 }
             } elseif (is_array($query[$i])) {
                 // Nested query found. Resolve it as well.
@@ -110,13 +127,7 @@ class Interpreter extends TestMethodProvider
             $parameters = [];
             // If there are parameters, walk through them and apply them if they don't start a new method.
             while (isset($query[$i + 1]) && !($query[$i + 1] instanceof Method)) {
-                if (is_string($query[$i + 1])) {
-                    // Make sure additional string parameters are split up into chunks.
-                    $parameters = array_merge($parameters, array_map('trim', explode(' ', $query[$i + 1])));
-                } else {
-                    // Literally or array should not be split.
-                    $parameters[] = $query[$i + 1];
-                }
+                $parameters[] = $query[$i + 1];
 
                 // Since the parameters will be appended to the method object, they are already parsed and can be
                 // removed from further parsing. Don't use unset to keep keys incrementing.
@@ -124,8 +135,7 @@ class Interpreter extends TestMethodProvider
             }
 
             // Now, append that method to the builder object.
-            $method->setParameters($parameters);
-            $method->callMethodOn($builder);
+            $method->setParameters($parameters)->callMethodOn($builder);
         }
 
         return $builder;

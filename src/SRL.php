@@ -63,4 +63,9 @@ class SRL
     {
         return (new Builder)->$name(...$arguments);
     }
+
+    public function __toString()
+    {
+        return $this->language->get();
+    }
 }

@@ -346,6 +346,8 @@ class Builder extends TestMethodProvider
             return $this->add('?');
         }
 
+        $chars = implode('', array_map([$this, 'escape'], str_split($chars)));
+
         return $this->add("(?:$chars)?");
     }
 
