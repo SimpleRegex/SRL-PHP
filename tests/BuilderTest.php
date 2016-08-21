@@ -138,7 +138,7 @@ class BuilderTest extends TestCase
     {
         $this->assertEquals(
             ['sample,one', ' two', 'three'],
-            SRL::literally(',')->twice()->whitespace()->optional()->lazy()->split('sample,one,, two,,three')
+            SRL::literally(',')->twice()->whitespace()->optional()->firstMatch()->split('sample,one,, two,,three')
         );
     }
 

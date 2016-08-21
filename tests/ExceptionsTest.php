@@ -4,6 +4,7 @@ namespace Tests;
 
 use ReflectionClass;
 use SRL\Builder;
+use SRL\Language\Helpers\ParenthesesParser;
 use SRL\SRL;
 
 class ExceptionsTest extends TestCase
@@ -52,7 +53,7 @@ class ExceptionsTest extends TestCase
      */
     public function testInvalidLaziness()
     {
-        SRL::literally('foo')->lazy();
+        SRL::literally('foo')->firstMatch();
     }
 
     /**
@@ -62,5 +63,53 @@ class ExceptionsTest extends TestCase
     public function testInvalidRaw()
     {
         SRL::literally('foo')->raw('ba)r');
+    }
+
+    /**
+     * @expectedException  \SRL\Exceptions\SyntaxException
+     * @expectedExceptionMessage Non-matching parenthesis found.
+     */
+    public function testInvalidParenthesis()
+    {
+        $parser = new ParenthesesParser('foo ( bar');
+        $parser->parse();
+    }
+
+    /**
+     * @expectedException  \SRL\Exceptions\SyntaxException
+     * @expectedExceptionMessage Non-matching parenthesis found.
+     */
+    public function testOtherInvalidParenthesis()
+    {
+        $parser = new ParenthesesParser('foo ) bar');
+        $parser->parse();
+    }
+
+    /**
+     * @expectedException  \SRL\Exceptions\SyntaxException
+     * @expectedExceptionMessage Invalid string ending found.
+     */
+    public function testInvalidStringEnding()
+    {
+        $parser = new ParenthesesParser('foo "bar');
+        $parser->parse();
+    }
+
+    /**
+     * @expectedException  \SRL\Exceptions\ImplementationException
+     * @expectedExceptionMessage Method `onceOrMore` is not allowed at the beginning.
+     */
+    public function testInvalidMethodCallOne()
+    {
+        SRL::onceOrMore();
+    }
+
+    /**
+     * @expectedException  \SRL\Exceptions\ImplementationException
+     * @expectedExceptionMessage Method `neverOrMore` is not allowed after a quantifier.
+     */
+    public function testInvalidMethodCallTwo()
+    {
+        SRL::literally('foo')->twice()->neverOrMore();
     }
 }
