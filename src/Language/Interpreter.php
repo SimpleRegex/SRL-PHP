@@ -86,7 +86,7 @@ class Interpreter extends TestMethodProvider
                     }
                 } catch (SyntaxException $e) {
                     // There could be some parameters, so we'll split them and try to parse them again
-                    $split = explode(' ', $query[$i], 2);
+                    $split = preg_split('/[\s]+/', $query[$i], 2);
                     $query[$i] = trim($split[0]);
                     if (isset($split[1])) {
                         array_splice($query, $i + 1, 0, trim($split[1]));
@@ -121,7 +121,7 @@ class Interpreter extends TestMethodProvider
             if (!$method instanceof Method) {
                 // At this point, there should only be methods left, since all parameters are already taken care of.
                 // If that's not the case, something didn't work out.
-                throw new SyntaxException("Unexpected keyword: `$method`");
+                throw new SyntaxException("Unexpected statement: `$method`");
             }
 
             $parameters = [];

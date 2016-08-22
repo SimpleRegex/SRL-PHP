@@ -46,7 +46,7 @@ Yes, indeed, both examples are definitely longer than the corresponding
 regular expression:
 
 ```
-/^([A-Z]|[0-9._%+-])+@[A-Z0-9.-]+\.[A-Z]{2,}$/i
+/^([A-Z0-9._%+-])+@[A-Z0-9.-]+\.[A-Z]{2,}$/i
 ```
 
 But, however, the above is quite better to read and definitely better
@@ -69,7 +69,7 @@ an email address.
 
 ## Features
 
-### Using the language
+### Using the Language
 
 Above you can see two examples. The first one uses the language itself,
 the second one the Query Builder. Since using a language is more fluent
