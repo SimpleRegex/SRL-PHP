@@ -8,7 +8,7 @@ class LanguageInterpreterTest extends TestCase
 {
     public function testParser()
     {
-        $srl = new SRL('aNy Letter ONCE or more literAlly "fO/o"');
+        $srl = new SRL('aNy Character ONCE or more literAlly "fO/o"');
         $this->assertEquals('/\w+fO\/o/', $srl->get());
 
         $srl = new SRL('begin with literally "http", optional "s", literally "://", optional "www.",' .
