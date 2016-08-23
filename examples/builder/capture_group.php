@@ -15,7 +15,7 @@ $query = SRL::literally('colo')
     })
     ->whitespace()
     ->capture(function (Builder $query) {
-        $query->anyLetter()->onceOrMore();
+        $query->letter()->onceOrMore();
     }, 'color')
     ->literally('.');
 

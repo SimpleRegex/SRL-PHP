@@ -113,11 +113,11 @@ that capture group (`color`) can be set as well:
 
 ```php
 // Using SRL
-$regEx = new SRL('literally "color:", whitespace, capture (any letter once or more) as "color", literally "."');
+$regEx = new SRL('literally "color:", whitespace, capture (letter once or more) as "color", literally "."');
 
 // Using the query builder
 $regEx = SRL::literally('color:')->whitespace()->capture(function (Builder $query) {
-    $query->anyLetter()->onceOrMore();
+    $query->letter()->onceOrMore();
 }, 'color')->literally('.');
 
 $matches = $regEx->getMatches('Favorite color: green. Another color: yellow.');

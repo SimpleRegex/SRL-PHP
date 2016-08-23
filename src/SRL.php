@@ -31,8 +31,8 @@ use SRL\Language\Interpreter;
  * @method static \SRL\Builder newLine() Match new line character.
  * @method static \SRL\Builder whitespace() Match any whitespace character.
  * @method static \SRL\Builder noWhitespace() Match any non-whitespace character.
- * @method static \SRL\Builder anyLetter() Match any word character.
- * @method static \SRL\Builder noLetter() Match any non-word character.
+ * @method static \SRL\Builder anyCharacter() Match any word character.
+ * @method static \SRL\Builder noCharacter() Match any non-word character.
  *
  * @mixin \SRL\Language\Interpreter
  */

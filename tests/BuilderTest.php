@@ -70,7 +70,7 @@ class BuilderTest extends TestCase
             })
             ->whitespace()
             ->capture(function (Builder $query) {
-                $query->anyLetter()->onceOrMore();
+                $query->letter()->onceOrMore();
             }, 'color')
             ->literally('.');
 
@@ -90,7 +90,7 @@ class BuilderTest extends TestCase
     public function testReplace()
     {
         $query = SRL::capture(function (Builder $query) {
-            $query->anyLetter()->onceOrMore();
+            $query->anyCharacter()->onceOrMore();
         })->whitespace()->capture(function (Builder $query) {
             $query->number()->onceOrMore();
         })->literally(', ')->capture(function (Builder $query) {
@@ -113,7 +113,7 @@ class BuilderTest extends TestCase
     public function testReplaceCallback()
     {
         $query = SRL::capture(function (Builder $query) {
-            $query->anyLetter()->onceOrMore();
+            $query->anyCharacter()->onceOrMore();
         })->whitespace()->capture(function (Builder $query) {
             $query->number()->onceOrMore();
         })->literally(', ')->capture(function (Builder $query) {

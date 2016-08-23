@@ -32,8 +32,8 @@ use SRL\Interfaces\TestMethodProvider;
  * @method $this newLine() Match new line character.
  * @method $this whitespace() Match any whitespace character.
  * @method $this noWhitespace() Match any non-whitespace character.
- * @method $this anyLetter() Match any word character.
- * @method $this noLetter() Match any non-word character.
+ * @method $this anyCharacter() Match any word character.
+ * @method $this noCharacter() Match any non-word character.
  */
 class Builder extends TestMethodProvider
 {
@@ -112,12 +112,12 @@ class Builder extends TestMethodProvider
             'type' => self::METHOD_TYPE_CHARACTER,
             'allowed' => self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS
         ],
-        'anyLetter' => [
+        'anyCharacter' => [
             'add' => '\w',
             'type' => self::METHOD_TYPE_CHARACTER,
             'allowed' => self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS
         ],
-        'noLetter' => [
+        'noCharacter' => [
             'add' => '\W',
             'type' => self::METHOD_TYPE_CHARACTER,
             'allowed' => self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS

@@ -13,8 +13,8 @@ class Matcher
 
     /** @var string[] Contains all possible commands. */
     protected $mapper = [
-        'any letter' => ['class' => Methods\SimpleMethod::class, 'method' => 'anyLetter'],
-        'no letter' => ['class' => Methods\SimpleMethod::class, 'method' => 'noLetter'],
+        'any character' => ['class' => Methods\SimpleMethod::class, 'method' => 'anyCharacter'],
+        'no character' => ['class' => Methods\SimpleMethod::class, 'method' => 'noCharacter'],
         'multi line' => ['class' => Methods\SimpleMethod::class, 'method' => 'multiLine'],
         'single line' => ['class' => Methods\SimpleMethod::class, 'method' => 'singleLine'],
         'case insensitive' => ['class' => Methods\SimpleMethod::class, 'method' => 'caseInsensitive'],
@@ -80,7 +80,7 @@ class Matcher
         $maxMatchCount = 0;
 
         // Go through each mapper and check if the name matches. Then, take the highest match to avoid matching
-        // 'any', if 'any letter' was given, and so on.
+        // 'any', if 'any character' was given, and so on.
         foreach ($this->mapper as $key => $value) {
             $matches = [];
             preg_match_all('/^(' . str_replace(' ', ') (', $key) . ')/i', $part, $matches, PREG_SET_ORDER);
