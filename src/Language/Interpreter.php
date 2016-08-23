@@ -7,10 +7,10 @@ use SRL\Exceptions\InterpreterException;
 use SRL\Exceptions\SyntaxException;
 use SRL\Interfaces\Method;
 use SRL\Interfaces\TestMethodProvider;
+use SRL\Language\Helpers\Cache;
 use SRL\Language\Helpers\Literally;
 use SRL\Language\Helpers\Matcher;
 use SRL\Language\Helpers\ParenthesesParser;
-use SRL\Language\Methods\DefaultMethod;
 
 /**
  * Interpreter for string commands in SRL style.
@@ -31,10 +31,15 @@ class Interpreter extends TestMethodProvider
 
     public function __construct(string $query)
     {
-        $this->rawQuery = trim($query);
+        $this->rawQuery = rtrim(trim($query), ';');
         $this->matcher = Matcher::getInstance();
 
-        $this->build();
+        // Search for the SRL query in the local cache before building it.
+        if (Cache::has($this->rawQuery)) {
+            $this->builder = Cache::get($this->rawQuery);
+        } else {
+            $this->build();
+        }
     }
 
     /**
@@ -45,6 +50,9 @@ class Interpreter extends TestMethodProvider
         $this->resolve();
 
         $this->builder = static::buildQuery($this->resolvedQuery);
+
+        // Add built query to cache, to avoid rebuilding the same query over and over.
+        Cache::add($this->rawQuery, $this->builder);
     }
 
     /**
@@ -68,7 +76,7 @@ class Interpreter extends TestMethodProvider
         for ($i = 0; $i < count($query); $i++) {
             if (is_string($query[$i])) {
                 // Remove commas and remove item if empty.
-                $query[$i] = str_replace(',', '', $query[$i]);
+                $query[$i] = str_replace(',', ' ', $query[$i]);
                 if (empty($query[$i])) {
                     array_splice($query, $i, 0);
                     continue;
@@ -121,7 +129,7 @@ class Interpreter extends TestMethodProvider
             if (!$method instanceof Method) {
                 // At this point, there should only be methods left, since all parameters are already taken care of.
                 // If that's not the case, something didn't work out.
-                throw new SyntaxException("Unexpected statement: `$method`");
+                throw new SyntaxException("Unexpected statement: $method");
             }
 
             $parameters = [];
@@ -134,8 +142,12 @@ class Interpreter extends TestMethodProvider
                 array_splice($query, $i + 1, 1);
             }
 
-            // Now, append that method to the builder object.
-            $method->setParameters($parameters)->callMethodOn($builder);
+            try {
+                // Now, append that method to the builder object.
+                $method->setParameters($parameters)->callMethodOn($builder);
+            } catch (SyntaxException $e) {
+                throw new SyntaxException("Invalid parameter given for `{$method->getOriginal()}`.", 0, $e);
+            }
         }
 
         return $builder;
@@ -144,16 +156,18 @@ class Interpreter extends TestMethodProvider
     /**
      * @inheritdoc
      */
-    protected function getRawRegex() : string
+    public function get(string $delimiter = '/', bool $ignoreInvalid = false) : string
     {
-        return $this->builder->get('');
+        return $this->builder->get($delimiter, $ignoreInvalid);
     }
 
     /**
-     * @inheritdoc
+     * Get the underlying builder object.
+     *
+     * @return Builder
      */
-    public function getModifiers() : string
+    public function getBuilder() : Builder
     {
-        return $this->builder->getModifiers();
+        return $this->builder;
     }
 }

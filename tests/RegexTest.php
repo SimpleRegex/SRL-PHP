@@ -26,9 +26,9 @@ class RegexTest extends TestCase
     {
         $regEx = SRL::literally('<')->capture(function (Builder $query) {
             $query->letter()->onceOrMore();
-        }, 'name')->any()->neverOrMore()->to('>')->capture(function (Builder $query) {
+        }, 'name')->any()->neverOrMore()->until('>')->capture(function (Builder $query) {
             $query->any()->onceOrMore();
-        }, 'content')->to('<')->caseInsensitive();
+        }, 'content')->until('<')->caseInsensitive();
 
         $results = $regEx->getMatches('<foo bla="gedoens">bar</foo><baz>baz</baz>');
 
@@ -42,13 +42,13 @@ class RegexTest extends TestCase
     {
         $regEx = SRL::literally('<')->capture(function (Builder $query) {
             $query->letter()->onceOrMore();
-        })->any()->neverOrMore()->to('>')->capture(function (Builder $query) {
+        })->any()->neverOrMore()->until('>')->capture(function (Builder $query) {
             $query->any()->onceOrMore();
-        })->to('<')->caseInsensitive();
+        })->until('<')->caseInsensitive();
 
         $results = $regEx->getMatches('<foo bla="gedoens">bar</foo><baz>baz</baz>');
 
-        $this->assertEquals(['foo', 'bar'], $results[0]->getMatches());
-        $this->assertEquals(['baz', 'baz'], $results[1]->getMatches());
+        $this->assertEquals(['foo', 'bar'], $results[0]->all());
+        $this->assertEquals(['baz', 'baz'], $results[1]->all());
     }
 }

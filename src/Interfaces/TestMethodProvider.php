@@ -12,40 +12,14 @@ use SRL\Match;
 abstract class TestMethodProvider
 {
     /**
-     * Get the raw regular expression without delimiter or modifiers.
-     *
-     * @return string
-     */
-    abstract protected function getRawRegex() : string;
-
-    /**
-     * Get all set modifiers.
-     *
-     * @return string
-     */
-    abstract public function getModifiers() : string;
-
-    /**
      * Build and return the resulting regular expression. This will apply the given delimiter and all modifiers.
      *
      * @param string $delimiter The delimiter to use. Defaults to '/'. If left empty, avoid using modifiers,
      *                          since they then will be ignored.
+     * @param bool $ignoreInvalid Ignore invalid regular expressions.
      * @return string The resulting regular expression.
      */
-    public function get(string $delimiter = '/') : string
-    {
-        if (empty($delimiter)) {
-            return $this->getRawRegex();
-        }
-
-        return sprintf(
-            '%s%s%s%s',
-            $delimiter,
-            str_replace($delimiter, '\\' . $delimiter, $this->getRawRegex()),
-            $delimiter,
-            $this->getModifiers()
-        );
-    }
+    public abstract function get(string $delimiter = '/', bool $ignoreInvalid = false) : string;
 
     /**
      * Test if regular expression matches given string.
@@ -140,12 +114,26 @@ abstract class TestMethodProvider
     }
 
     /**
+     * Match regular expression against string and return first match object.
+     *
+     * @param string $string
+     * @param int $offset
+     * @return null|Match
+     * @throws PregException
+     */
+    public function getMatch(string $string, int $offset = 0)
+    {
+        return $this->getMatches($string, $offset)[0] ?? null;
+    }
+
+    /**
      * Validate regular expression.
      *
+     * @param string $expression Validate given expression instead of current object.
      * @return bool
      */
-    public function isValid() : bool
+    public function isValid(string $expression = null) : bool
     {
-        return @preg_match($this->get(), null) !== false;
+        return @preg_match($expression ?: $this->get('/', true), null) !== false;
     }
 }

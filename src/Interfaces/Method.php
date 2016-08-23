@@ -3,10 +3,10 @@
 namespace SRL\Interfaces;
 
 use SRL\Builder;
-use SRL\Exceptions\SRLException;
 use SRL\Exceptions\SyntaxException;
 use SRL\Language\Helpers\Literally;
 use SRL\Language\Interpreter;
+use Throwable;
 
 /**
  * Abstract Method class. Method strings recognized by the Matcher will result in an object of type Method.
@@ -48,8 +48,8 @@ abstract class Method
     public function callMethodOn(Builder $builder)
     {
         try {
-            return call_user_func([$builder, $this->methodName], ...$this->parameters);
-        } catch (SRLException $e) {
+            return $builder->{$this->methodName}(...$this->parameters);
+        } catch (Throwable $e) {
             throw new SyntaxException($e->getMessage(), $e->getCode(), $e);
         }
     }

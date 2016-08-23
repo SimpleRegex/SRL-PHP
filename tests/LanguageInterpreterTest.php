@@ -11,29 +11,38 @@ class LanguageInterpreterTest extends TestCase
         $srl = new SRL('aNy Letter ONCE or more literAlly "fO/o"');
         $this->assertEquals('/\w+fO\/o/', $srl->get());
 
-        $srl = new SRL('BEGIN WITH LITERALLY "http" OPTIONAL "s" LITERALLY "://" OPTIONAL "www." ANYTHING ONCE OR MORE LITERALLY ".com" MUST END');
+        $srl = new SRL('begin with literally "http", optional "s", literally "://", optional "www.",' .
+            'anything once or more, literally ".com", must end');
         $this->assertEquals('/^http(?:s)?:\/\/(?:www\.)?.+\.com$/', $srl->get());
         $this->assertTrue($srl->isMatching('http://www.ebay.com'));
         $this->assertTrue($srl->isMatching('https://google.com'));
         $this->assertFalse($srl->isMatching('htt://google.com'));
         $this->assertFalse($srl->isMatching('http://.com'));
 
-        $srl = new SRL('BEGIN WITH CAPTURE (NUMBER BETWEEN 0 AND 8 ONCE OR MORE) AS "number" IF FOLLOWED BY "foo"');
+        $srl = new SRL('begin with capture (number from 0 to 8 once or more) as "number" if followed by "foo"');
         $this->assertEquals('/^(?<number>[0-8]+)(?=foo)/', $srl->get());
         $this->assertTrue($srl->isMatching('142foo'));
         $this->assertFalse($srl->isMatching('149foo'));
         $this->assertFalse($srl->isMatching('14bar'));
-        $this->assertEquals('142', $srl->getMatches('142foo')[0]->get('number'));
+        $this->assertEquals('142', $srl->getMatch('142foo')->get('number'));
 
-        $srl = new SRL('LITERALLY "colo", OPTIONAL "u", LITERALLY "r"');
+        $srl = new SRL('literally "colo", optional "u", literally "r"');
         $this->assertEquals(1, preg_match($srl, 'color'));
         $this->assertTrue($srl->isMatching('colour'));
+
+        $srl = new SRL('starts with number from 0 to 5 between 3 and 5 times, must end');
+        $this->assertTrue($srl->isMatching('015'));
+        $this->assertTrue($srl->isMatching('44444'));
+        $this->assertFalse($srl->isMatching('444444'));
+        $this->assertFalse($srl->isMatching('1'));
+        $this->assertFalse($srl->isMatching('563'));
     }
 
     public function testEmail()
     {
-        $regex = new SRL('BEGIN WITH EITHER OF (NUMBER, LETTER, ONE OF "._%+-") ONCE OR MORE,' .
-            'LITERALLY "@", EITHER OF (NUMBER, LETTER, ONE OF ".-") ONCE OR MORE, LITERALLY ".", LETTER AT LEAST 2, MUST END, CASE INSENSITIVE');
+        $regex = new SRL('begin with either of (number, letter, one of "._%+-") once or more,' .
+            'literally "@", either of (number, letter, one of ".-") once or more, literally ".",'.
+            'letter at least 2, must end, case insensitive');
 
         $this->assertTrue($regex->isValid());
         $this->assertEquals(1, preg_match($regex, 'sample@example.com'));
@@ -50,7 +59,7 @@ class LanguageInterpreterTest extends TestCase
 
     public function testCaptureGroup()
     {
-        $regEx = new SRL('LITERALLY "color:", WHITESPACE, CAPTURE (ANY LETTER ONCE OR MORE) AS "color", LITERALLY "."');
+        $regEx = new SRL('literally "color:", whitespace, capture (any letter once or more) as "color", literally "."');
 
         $matches = $regEx->getMatches('Favorite color: green. Another color: yellow.');
 

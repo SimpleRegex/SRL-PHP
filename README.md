@@ -14,12 +14,12 @@ Let's change that! Regular Expressions don't have to be that bulky.
 They don't have to be bulky? - No, they don't! Just have a look at this:
 
 ```
-BEGIN WITH EITHER OF (NUMBER, LETTER, ONE OF "._%+-") ONCE OR MORE,
-LITERALLY "@",
-EITHER OF (NUMBER, LETTER, ONE OF ".-") ONCE OR MORE,
-LITERALLY ".",
-LETTER AT LEAST 2,
-MUST END, CASE INSENSITIVE
+begin with either of (number, letter, one of "._%+-") once or more,
+literally "@",
+either of (number, letter, one of ".-") once or more,
+literally ".",
+letter at least 2,
+must end, case insensitive
 ```
 
 Or, if you like, a implementation in code itself:
@@ -76,7 +76,7 @@ the second one the Query Builder. Since using a language is more fluent
 than a builder, we wanted to make things as easy as possible for you.
 
 ```php
-$srl = new SRL('LITERALLY "colo", OPTIONAL "u", LITERALLY "r"');
+$srl = new SRL('literally "colo", optional "u", literally "r"');
 preg_match($srl, 'color') // 1
 $srl->isMatching('colour') // true
 $srl->isMatching('soup') // false
@@ -113,7 +113,7 @@ that capture group (`color`) can be set as well:
 
 ```php
 // Using SRL
-$regEx = new SRL('LITERALLY "color:", WHITESPACE, CAPTURE (ANY LETTER ONCE OR MORE) AS "color", LITERALLY "."');
+$regEx = new SRL('literally "color:", whitespace, capture (any letter once or more) as "color", literally "."');
 
 // Using the query builder
 $regEx = SRL::literally('color:')->whitespace()->capture(function (Builder $query) {
@@ -138,6 +138,7 @@ apply one of the following methods directly on the SRL or Builder:
 
 * `isMatching()` - Validate if the expression matches the given string.
 * `getMatches()` - Get all matches for supplied capture groups.
+* `getMatch()` - Get first match for supplied capture groups.
 * `replace()` - Replace data using the expression.
 * `split()` - Split string into array through expression.
 * `filter()` - Filter items using the expression.
@@ -151,7 +152,7 @@ With queries like:
 
 ```php
 // SRL:
-new SRL('CAPTURE (LITERALLY "foo") IF FOLLOWED BY (LITERALLY "bar")');
+new SRL('capture (literally "foo") if followed by (literally "bar")');
 
 // Query Builder:
 SRL::capture(function (Builder $query) {

@@ -42,7 +42,7 @@ class Match
      *
      * @return array
      */
-    public function getMatches() : array
+    public function all() : array
     {
         return $this->attributes;
     }

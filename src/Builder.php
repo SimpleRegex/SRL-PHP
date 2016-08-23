@@ -7,10 +7,12 @@ use SRL\Builder\EitherOf;
 use SRL\Builder\Capture;
 use SRL\Builder\NegativeLookahead;
 use SRL\Builder\NegativeLookbehind;
+use SRL\Builder\Optional;
 use SRL\Builder\PositiveLookahead;
 use SRL\Builder\PositiveLookbehind;
 use SRL\Exceptions\BuilderException;
 use SRL\Exceptions\ImplementationException;
+use SRL\Exceptions\SyntaxException;
 use SRL\Interfaces\TestMethodProvider;
 
 /**
@@ -335,20 +337,18 @@ class Builder extends TestMethodProvider
     /**
      * Make the last or given condition optional.
      *
-     * @param string|null $chars
+     * @param null|Closure|Builder|string $conditions Anonymous function with its Builder as a first parameter.
      * @return Builder
      */
-    public function optional(string $chars = null) : self
+    public function optional($conditions = null) : self
     {
         $this->validateAndAddMethodType(self::METHOD_TYPE_QUANTIFIER, self::METHOD_TYPE_CHARACTER | self::METHOD_TYPE_GROUP);
 
-        if (!$chars) {
+        if (!$conditions) {
             return $this->add('?');
         }
 
-        $chars = implode('', array_map([$this, 'escape'], str_split($chars)));
-
-        return $this->add("(?:$chars)?");
+        return $this->addClosure(new Optional, $conditions);
     }
 
     /**
@@ -448,7 +448,7 @@ class Builder extends TestMethodProvider
      * @param $toCondition
      * @return Builder
      */
-    public function to($toCondition) : self
+    public function until($toCondition) : self
     {
         try {
             $this->lazy();
@@ -617,6 +617,32 @@ class Builder extends TestMethodProvider
     {
         return array_pop($this->regEx);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function get(string $delimiter = '/', bool $ignoreInvalid = false) : string
+    {
+        if (empty($delimiter)) {
+            return $this->getRawRegex();
+        }
+
+        $regEx = sprintf(
+            '%s%s%s%s',
+            $delimiter,
+            str_replace($delimiter, '\\' . $delimiter, $this->getRawRegex()),
+            $delimiter,
+            $this->getModifiers()
+        );
+
+        if (!$ignoreInvalid && !$this->isValid($regEx)) {
+            throw new SyntaxException('Generated expression seems to be inalid.');
+        }
+
+        return $regEx;
+    }
+
+
 
     /**********************************************************/
     /*                     MAGIC METHODS                      */
