@@ -16,7 +16,7 @@ class SimpleMethod extends Method
     public function setParameters(array $params) : Method
     {
         if (!empty($params)) {
-            throw new SyntaxException('Unexpected statement: ' . reset($params));
+            throw new SyntaxException('Invalid parameter.');
         }
 
         return $this;

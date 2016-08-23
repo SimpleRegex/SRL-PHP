@@ -7,6 +7,7 @@ use SRL\Builder\EitherOf;
 use SRL\Builder\Capture;
 use SRL\Builder\NegativeLookahead;
 use SRL\Builder\NegativeLookbehind;
+use SRL\Builder\NonCapture;
 use SRL\Builder\Optional;
 use SRL\Builder\PositiveLookahead;
 use SRL\Builder\PositiveLookbehind;
@@ -235,6 +236,19 @@ class Builder extends TestMethodProvider
         $this->validateAndAddMethodType(self::METHOD_TYPE_GROUP, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
 
         return $this->addClosure(new EitherOf, $conditions);
+    }
+
+    /**
+     * Match all of these conditions, but in a non capture group.
+     *
+     * @param Closure|Builder|string $conditions Anonymous function with its Builder as a first parameter.
+     * @return Builder
+     */
+    public function group($conditions) : self
+    {
+        $this->validateAndAddMethodType(self::METHOD_TYPE_GROUP, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
+
+        return $this->addClosure(new NonCapture, $conditions);
     }
 
     /**

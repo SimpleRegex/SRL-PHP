@@ -41,7 +41,7 @@ class LanguageInterpreterTest extends TestCase
     public function testEmail()
     {
         $regex = new SRL('begin with either of (number, letter, one of "._%+-") once or more,' .
-            'literally "@", either of (number, letter, one of ".-") once or more, literally ".",'.
+            'literally "@", either of (number, letter, one of ".-") once or more, literally ".",' .
             'letter at least 2, must end, case insensitive');
 
         $this->assertTrue($regex->isValid());
@@ -65,5 +65,17 @@ class LanguageInterpreterTest extends TestCase
 
         $this->assertEquals('green', $matches[0]->get('color'));
         $this->assertEquals('yellow', $matches[1]->get('color'));
+    }
+
+    public function testParentheses()
+    {
+        $regEx = new SRL('begin with (literally "foo", literally "bar") twice must end');
+        $this->assertEquals('/^(?:foobar){2}$/', $regEx->get());
+        $this->assertTrue($regEx->isMatching('foobarfoobar'));
+        $this->assertFalse($regEx->isMatching('foobar'));
+
+        $regEx = new SRL('begin with literally "bar", (literally "foo", literally "bar") twice must end');
+        $this->assertEquals('/^bar(?:foobar){2}$/', $regEx->get());
+        $this->assertTrue($regEx->isMatching('barfoobarfoobar'));
     }
 }

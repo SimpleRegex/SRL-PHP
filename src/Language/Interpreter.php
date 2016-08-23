@@ -3,6 +3,7 @@
 namespace SRL\Language;
 
 use SRL\Builder;
+use SRL\Builder\NonCapture;
 use SRL\Exceptions\InterpreterException;
 use SRL\Exceptions\SyntaxException;
 use SRL\Interfaces\Method;
@@ -146,7 +147,14 @@ class Interpreter extends TestMethodProvider
                 // Now, append that method to the builder object.
                 $method->setParameters($parameters)->callMethodOn($builder);
             } catch (SyntaxException $e) {
-                throw new SyntaxException("Invalid parameter given for `{$method->getOriginal()}`.", 0, $e);
+                if (is_array($parameters[0])) {
+                    // An array should be treated as a non capture group. First, execute the parent method call
+                    // without parameters, then add the group.
+                    $method->callMethodOn($builder);
+                    $builder->and(static::buildQuery($parameters[0], new NonCapture));
+                } else {
+                    throw new SyntaxException("Invalid parameter given for `{$method->getOriginal()}`.", 0, $e);
+                }
             }
         }
 

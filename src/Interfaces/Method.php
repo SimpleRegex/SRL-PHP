@@ -22,6 +22,9 @@ abstract class Method
     /** @var array Contains the parsed parameters to pass on execution. */
     protected $parameters = [];
 
+    /** @var int[] Contains all executed callbacks for that method. Helps finding "lost" groups. */
+    private $executedCallbacks = [];
+
     public function __construct(string $original, string $methodName)
     {
         $this->original = $original;
@@ -48,7 +51,16 @@ abstract class Method
     public function callMethodOn(Builder $builder)
     {
         try {
-            return $builder->{$this->methodName}(...$this->parameters);
+            $response = $builder->{$this->methodName}(...$this->parameters);
+
+            foreach ($this->parameters as $k => $parameter) {
+                if (is_callable($parameter) && !in_array($k, $this->executedCallbacks)) {
+                    // Callback wasn't executed, but expected to. Assuming parentheses without method, so let's "and" it.
+                    $builder->group($parameter);
+                }
+            }
+
+            return $response;
         } catch (Throwable $e) {
             throw new SyntaxException($e->getMessage(), $e->getCode(), $e);
         }
@@ -63,12 +75,13 @@ abstract class Method
      */
     public function setParameters(array $params) : self
     {
-        foreach ($params as &$parameter) {
+        foreach ($params as $k => &$parameter) {
             if ($parameter instanceof Literally) {
                 $parameter = $parameter->getString();
             } elseif (is_array($parameter)) {
                 // Assuming the user wanted to start a sub-query. This means, we'll create a callback for them.
-                $cb = function (Builder $query) use ($parameter) {
+                $cb = function (Builder $query) use ($parameter, $k) {
+                    $this->executedCallbacks[] = $k;
                     Interpreter::buildQuery($parameter, $query);
                 };
                 $parameter = $cb;
