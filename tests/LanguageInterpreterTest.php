@@ -9,18 +9,18 @@ class LanguageInterpreterTest extends TestCase
     public function testParser()
     {
         $srl = new SRL('aNy Character ONCE or more literAlly "fO/o"');
-        $this->assertEquals('/\w+fO\/o/', $srl->get());
+        $this->assertEquals('/\w+(?:fO\/o)/', $srl->get());
 
         $srl = new SRL('begin with literally "http", optional "s", literally "://", optional "www.",' .
             'anything once or more, literally ".com", must end');
-        $this->assertEquals('/^http(?:s)?:\/\/(?:www\.)?.+\.com$/', $srl->get());
+        $this->assertEquals('/^(?:http)(?:(?:s))?(?::\/\/)(?:(?:www\.))?.+(?:\.com)$/', $srl->get());
         $this->assertTrue($srl->isMatching('http://www.ebay.com'));
         $this->assertTrue($srl->isMatching('https://google.com'));
         $this->assertFalse($srl->isMatching('htt://google.com'));
         $this->assertFalse($srl->isMatching('http://.com'));
 
         $srl = new SRL('begin with capture (number from 0 to 8 once or more) as "number" if followed by "foo"');
-        $this->assertEquals('/^(?<number>[0-8]+)(?=foo)/', $srl->get());
+        $this->assertEquals('/^(?<number>[0-8]+)(?=(?:foo))/', $srl->get());
         $this->assertTrue($srl->isMatching('142foo'));
         $this->assertFalse($srl->isMatching('149foo'));
         $this->assertFalse($srl->isMatching('14bar'));
@@ -70,12 +70,17 @@ class LanguageInterpreterTest extends TestCase
     public function testParentheses()
     {
         $regEx = new SRL('begin with (literally "foo", literally "bar") twice must end');
-        $this->assertEquals('/^(?:foobar){2}$/', $regEx->get());
+        $this->assertEquals('/^(?:(?:foo)(?:bar)){2}$/', $regEx->get());
         $this->assertTrue($regEx->isMatching('foobarfoobar'));
         $this->assertFalse($regEx->isMatching('foobar'));
 
         $regEx = new SRL('begin with literally "bar", (literally "foo", literally "bar") twice must end');
-        $this->assertEquals('/^bar(?:foobar){2}$/', $regEx->get());
+        $this->assertEquals('/^(?:bar)(?:(?:foo)(?:bar)){2}$/', $regEx->get());
         $this->assertTrue($regEx->isMatching('barfoobarfoobar'));
+
+        $regEx = new SRL('(literally "foo") twice');
+        $this->assertEquals('/(?:(?:foo)){2}/', $regEx->get());
+        $this->assertTrue($regEx->isMatching('foofoo'));
+        $this->assertFalse($regEx->isMatching('foo'));
     }
 }

@@ -178,7 +178,7 @@ class Builder extends TestMethodProvider
     {
         $this->validateAndAddMethodType(self::METHOD_TYPE_CHARACTER, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
 
-        return $this->add(implode('', array_map([$this, 'escape'], str_split($chars))));
+        return $this->add('(?:' . implode('', array_map([$this, 'escape'], str_split($chars))) . ')');
     }
 
     /**
@@ -446,7 +446,7 @@ class Builder extends TestMethodProvider
         $this->lastMethodType = self::METHOD_TYPE_QUANTIFIER;
 
         if (strpos('+*}?', substr($this->getRawRegex(), -1)) === false) {
-            if (substr(end($this->regEx), -1) === ')') {
+            if (substr(end($this->regEx), -1) === ')' && strpos('+*}?', substr($this->getRawRegex(), -2, 1)) !== false) {
                 return $this->add(substr($this->revertLast(), 0, -1) . '?)');
             }
 

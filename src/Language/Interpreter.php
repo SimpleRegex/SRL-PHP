@@ -127,6 +127,12 @@ class Interpreter extends TestMethodProvider
         for ($i = 0; $i < count($query); $i++) {
             $method = $query[$i];
 
+            if (is_array($method)) {
+                // User supplied parentheses. Let's execute them as a non capture group
+                $builder->and(static::buildQuery($method, new NonCapture));
+                continue;
+            }
+
             if (!$method instanceof Method) {
                 // At this point, there should only be methods left, since all parameters are already taken care of.
                 // If that's not the case, something didn't work out.
