@@ -2,6 +2,7 @@
 
 namespace SRL\Interfaces;
 
+use Closure;
 use SRL\Builder;
 use SRL\Exceptions\SyntaxException;
 use SRL\Language\Helpers\Literally;
@@ -54,7 +55,7 @@ abstract class Method
             $response = $builder->{$this->methodName}(...$this->parameters);
 
             foreach ($this->parameters as $k => $parameter) {
-                if (is_callable($parameter) && !in_array($k, $this->executedCallbacks)) {
+                if ($parameter instanceof Closure && !in_array($k, $this->executedCallbacks)) {
                     // Callback wasn't executed, but expected to. Assuming parentheses without method, so let's "and" it.
                     $builder->group($parameter);
                 }
