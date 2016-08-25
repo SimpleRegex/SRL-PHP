@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests;
+namespace SRLTests;
 
 use SRL\SRL;
 
@@ -59,9 +59,6 @@ class LanguageInterpreterTest extends TestCase
 
     public function testCaptureGroup()
     {
-        $regEx = new SRL('capture (anything) as "basename"');
-        $this->assertEquals('/(?<basename>.)/', $regEx->get());
-
         $regEx = new SRL('literally "color:", whitespace, capture (letter once or more) as "color", literally "."');
 
         $matches = $regEx->getMatches('Favorite color: green. Another color: yellow.');

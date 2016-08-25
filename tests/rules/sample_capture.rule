@@ -1,0 +1,10 @@
+# This is a sample rule with an anonymous capture group and multiple results
+srl: capture (number)
+capture for "123":
+- 0: 0: "1"
+- 1: 0: "2"
+- 2: 0: "3"
+
+capture for "01":
+- 0: 0: "0"
+- 1: 0: "1"

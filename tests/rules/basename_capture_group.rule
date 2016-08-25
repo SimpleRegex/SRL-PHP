@@ -1,0 +1,7 @@
+# Make sure php internal functions aren't executed while using capture groups
+srl: begin with capture (letter twice) as "basename", must end
+capture for "aa":
+- 0: basename: "aa"
+no match: "a1"
+no match: "aaa"
+match: "bb"

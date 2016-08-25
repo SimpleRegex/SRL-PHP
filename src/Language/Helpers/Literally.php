@@ -12,7 +12,7 @@ class Literally
 
     public function __construct(string $string)
     {
-        $this->string = trim(stripslashes($string));
+        $this->string = stripslashes($string);
     }
 
     /**

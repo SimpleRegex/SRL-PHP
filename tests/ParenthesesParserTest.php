@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests;
+namespace SRLTests;
 
 use SRL\Language\Helpers\Literally;
 use SRL\Language\Helpers\ParenthesesParser;

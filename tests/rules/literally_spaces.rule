@@ -1,0 +1,4 @@
+# Make sure literal strings are not trimmed.
+srl: literally " foo "
+match: " foo "
+no match: "foo"

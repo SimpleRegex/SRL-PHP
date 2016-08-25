@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests;
+namespace SRLTests;
 
 use ReflectionClass;
 use SRL\Builder;
