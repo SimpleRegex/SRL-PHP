@@ -1,0 +1,9 @@
+srl: begin with either of (number, letter, one of "._%+-") once or more, literally "@", either of (number, letter, one of ".-") once or more, literally ".", letter at least 2 times, must end, case insensitive
+match: "you@example.com"
+match: "you@example.email"
+match: "me@foo.bar.email"
+no match: "you@example.c"
+no match: "you@example"
+no match: "you@.com"
+no match: "@example.com"
+no match: "example.com"

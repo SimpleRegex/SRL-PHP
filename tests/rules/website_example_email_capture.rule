@@ -1,0 +1,11 @@
+srl: capture (either of (number, letter, one of "._%+-") once or more) as "local", literally "@", capture ( either of (number, letter, one of ".-") once or more, literally ".", letter at least 2 times ) as "domain", case insensitive
+match: "you@example.email, me@you.com"
+no match: "you@example.c"
+no match: "just some text"
+no match: "example.com"
+
+capture for "Message me at you@example.com. Business email: business@awesome.email":
+- 0: local: "you"
+- 0: domain: "example.com"
+- 1: local: "business"
+- 1: domain: "awesome.email"

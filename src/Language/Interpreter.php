@@ -184,4 +184,14 @@ class Interpreter extends TestMethodProvider
     {
         return $this->builder;
     }
+
+    /**
+     * Return the raw SRL query.
+     *
+     * @return string
+     */
+    public function getRawQuery() : string
+    {
+        return $this->rawQuery;
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace SRLTests;
 
+use Exception;
 use SRL\SRL;
 
 class RulesTest extends TestCase
@@ -20,12 +21,16 @@ class RulesTest extends TestCase
         $assertionMade = false;
         $this->assertNotEmpty($data['srl'], 'SRL for rule is empty. Invalid rule.');
 
-        $query = new SRL($data['srl']);
+        try {
+            $query = new SRL($data['srl']);
+        } catch (Exception $e) {
+            $this->assertTrue(false, "Parser error: {$e->getMessage()}\n\nSupplied SRL Query: {$data['srl']}\n\n");
+        }
 
         foreach ($data['matches'] as $match) {
             $this->assertTrue(
                 $query->isMatching($match),
-                "Failed asserting that '{$data['srl']}' matches '$match'"
+                "Failed asserting that this query matches '$match'." . $this->getExpression($query)
             );
             $assertionMade = true;
         }
@@ -33,25 +38,34 @@ class RulesTest extends TestCase
         foreach ($data['no_matches'] as $noMatch) {
             $this->assertFalse(
                 $query->isMatching($noMatch),
-                "Failed asserting that '{$data['srl']}' does not match '$noMatch'"
+                "Failed asserting that this query does not match '$noMatch'." . $this->getExpression($query)
             );
             $assertionMade = true;
         }
 
         foreach ($data['captures'] as $test => $expected) {
-            $matches = $query->getMatches($test);
-            $this->assertCount(count($expected), $matches, "Invalid match count for test '$test' on '{$data['srl']}'.");
+            try {
+                $matches = $query->getMatches($test);
+            } catch (Exception $e) {
+                $this->assertTrue(false, "Parser error: {$e->getMessage()}" . $this->getExpression($query));
+            }
+
+            $this->assertCount(
+                count($expected),
+                $matches,
+                "Invalid match count for test '$test'." . $this->getExpression($query)
+            );
             foreach ($matches as $k => $capture) {
                 $this->assertEquals(
                     $expected[$k],
                     $capture->all(),
-                    "The capture group did not return the expected results for test '$test' on '{$data['srl']}'"
+                    "The capture group did not return the expected results for test '$test'." . $this->getExpression($query)
                 );
             }
             $assertionMade = true;
         }
 
-        $this->assertTrue($assertionMade, "No assertion for '{$data['srl']}'. Invalid rule.");
+        $this->assertTrue($assertionMade, "No assertion. Invalid rule." . $this->getExpression($query));
     }
 
     protected function buildData(array $lines) : array
@@ -80,7 +94,7 @@ class RulesTest extends TestCase
                 $inCapture = substr($line, 13, -2);
             } elseif ($inCapture && substr($line, 0, 1) === '-') {
                 $split = explode(': ', substr($line, 1));
-                $data['captures'][$inCapture][(int)$split[0]][trim($split[1])] = substr($split[2], 1, -1);
+                $data['captures'][$inCapture][(int)$split[0]][trim($split[1])] = $this->applySpecialChars(substr($split[2], 1, -1));
             }
         }
 
@@ -90,5 +104,10 @@ class RulesTest extends TestCase
     protected function applySpecialChars(string $string) : string
     {
         return str_replace(['\n', '\t'], ["\n", "\t"], $string);
+    }
+
+    protected function getExpression(SRL $srl) : string
+    {
+        return "\n\nSupplied SRL Query  : {$srl->getRawQuery()}\nGenerated Expression: {$srl->get('/', true)}\n\n";
     }
 }
