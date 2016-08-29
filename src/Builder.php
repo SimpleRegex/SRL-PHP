@@ -165,7 +165,10 @@ class Builder extends TestMethodProvider
     {
         $this->validateAndAddMethodType(self::METHOD_TYPE_CHARACTER, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
 
-        return $this->add('[' . implode('', array_map([$this, 'escape'], str_split($chars))) . ']');
+        $chars = implode('', array_map([$this, 'escape'], str_split($chars)));
+        $chars = str_replace(['-', ']'], ['\\-', '\\]'], $chars);
+
+        return $this->add('[' . $chars . ']');
     }
 
     /**
