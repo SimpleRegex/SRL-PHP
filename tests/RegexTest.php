@@ -9,7 +9,7 @@ class RegexTest extends TestCase
 {
     public function testTrimmingWhitespaces()
     {
-        $regEx = SRL::eitherOf(function (Builder $query) {
+        $regEx = SRL::anyOf(function (Builder $query) {
             $query->and(function (Builder $query) {
                 $query->startsWith()->whitespace()->onceOrMore();
             })->and(function (Builder $query) {

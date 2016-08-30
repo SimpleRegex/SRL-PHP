@@ -29,7 +29,7 @@ class BuilderTest extends TestCase
     public function testSimpleEmailFormat()
     {
         $regex = SRL::startsWith()
-            ->eitherOf(function (Builder $query) {
+            ->anyOf(function (Builder $query) {
                 $query->number()
                     ->letter()
                     ->oneOf('._%+-');
@@ -63,7 +63,7 @@ class BuilderTest extends TestCase
         $query = SRL::literally('colo')
             ->optional('u')
             ->literally('r')
-            ->eitherOf(function (Builder $query) {
+            ->anyOf(function (Builder $query) {
                 $query->literally(':')->and(function (Builder $query) {
                     $query->literally(' is');
                 });

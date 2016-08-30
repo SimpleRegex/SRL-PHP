@@ -40,7 +40,7 @@ class LanguageInterpreterTest extends TestCase
 
     public function testEmail()
     {
-        $regex = new SRL('begin with either of (number, letter, one of "._%+-") once or more,' .
+        $regex = new SRL('begin with any of (number, letter, one of "._%+-") once or more,' .
             'literally "@", either of (number, letter, one of ".-") once or more, literally ".",' .
             'letter at least 2, must end, case insensitive');
 

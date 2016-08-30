@@ -39,7 +39,8 @@ class Matcher
         'first match' => ['class' => Methods\SimpleMethod::class, 'method' => 'firstMatch'],
 
         'literally' => ['class' => Methods\DefaultMethod::class, 'method' => 'literally'],
-        'either of' => ['class' => Methods\DefaultMethod::class, 'method' => 'eitherOf'],
+        'either of' => ['class' => Methods\DefaultMethod::class, 'method' => 'anyOf'],
+        'any of' => ['class' => Methods\DefaultMethod::class, 'method' => 'anyOf'],
         'if already had' => ['class' => Methods\DefaultMethod::class, 'method' => 'ifAlreadyHad'],
         'if not already had' => ['class' => Methods\DefaultMethod::class, 'method' => 'ifNotAlreadyHad'],
         'if followed by' => ['class' => Methods\DefaultMethod::class, 'method' => 'ifFollowedBy'],

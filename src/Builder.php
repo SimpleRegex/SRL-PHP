@@ -229,12 +229,25 @@ class Builder extends TestMethodProvider
     /**********************************************************/
 
     /**
-     * Match either of these conditions.
+     * Match any of these conditions.
      *
+     * @deprecated
+     * @see Builder::anyOf()
      * @param Closure|Builder|string $conditions Anonymous function with its Builder as a first parameter.
      * @return Builder
      */
     public function eitherOf($conditions) : self
+    {
+        return $this->anyOf($conditions);
+    }
+
+    /**
+     * Match any of these conditions.
+     *
+     * @param Closure|Builder|string $conditions Anonymous function with its Builder as a first parameter.
+     * @return Builder
+     */
+    public function anyOf($conditions) : self
     {
         $this->validateAndAddMethodType(self::METHOD_TYPE_GROUP, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
 
@@ -255,7 +268,7 @@ class Builder extends TestMethodProvider
     }
 
     /**
-     * Match all of these conditions. Basically reverts back to the default mode, if coming from eitherOf, etc.
+     * Match all of these conditions. Basically reverts back to the default mode, if coming from anyOf, etc.
      *
      * @param Closure|Builder|string $conditions Anonymous function with its Builder as a first parameter.
      * @return Builder

@@ -8,7 +8,7 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 $query = SRL::literally('colo')
     ->optional('u')
     ->literally('r')
-    ->eitherOf(function (Builder $query) {
+    ->anyOf(function (Builder $query) {
         $query->literally(':')->and(function (Builder $query) {
             $query->literally(' is');
         });

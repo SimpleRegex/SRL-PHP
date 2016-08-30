@@ -20,9 +20,9 @@ Regular Expressions don't have to be bulky? - No, they don't!
 Just have a look at this:
 
 ```
-begin with either of (number, letter, one of "._%+-") once or more,
+begin with any of (number, letter, one of "._%+-") once or more,
 literally "@",
-either of (number, letter, one of ".-") once or more,
+any of (number, letter, one of ".-") once or more,
 literally ".",
 letter at least 2,
 must end, case insensitive
@@ -32,13 +32,13 @@ Or, if you like, a implementation in code itself:
 
 ```php
 $query = SRL::startsWith()
-    ->eitherOf(function (Builder $query) {
+    ->anyOf(function (Builder $query) {
         $query->number()
             ->letter()
             ->oneOf('._%+-');
     })->onceOrMore()
     ->literally('@')
-    ->eitherOf(function (Builder $query) {
+    ->anyOf(function (Builder $query) {
         $query->number()
             ->letter()
             ->oneOf('.-');
