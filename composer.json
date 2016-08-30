@@ -3,7 +3,7 @@
   "description": "Simple Regex Language",
   "version": "0.1.0",
   "type": "library",
-  "license": "GPL-3.0",
+  "license": "MIT",
   "authors": [
     {
       "name": "Karim Geiger",
