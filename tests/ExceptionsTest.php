@@ -112,4 +112,13 @@ class ExceptionsTest extends TestCase
     {
         SRL::literally('foo')->twice()->neverOrMore();
     }
+
+    /**
+     * @expectedException  \SRL\Exceptions\SyntaxException
+     * @expectedExceptionMessage `literally` does not allow the use of sub-queries.
+     */
+    public function testInvalidArgument()
+    {
+        new SRL('literally (literally "foo")');
+    }
 }

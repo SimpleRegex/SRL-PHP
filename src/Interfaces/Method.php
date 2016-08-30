@@ -8,6 +8,7 @@ use SRL\Exceptions\SyntaxException;
 use SRL\Language\Helpers\Literally;
 use SRL\Language\Interpreter;
 use Throwable;
+use TypeError;
 
 /**
  * Abstract Method class. Method strings recognized by the Matcher will result in an object of type Method.
@@ -62,6 +63,8 @@ abstract class Method
             }
 
             return $response;
+        } catch (TypeError $e) {
+            throw new SyntaxException("`{$this->methodName}` does not allow the use of sub-queries.");
         } catch (Throwable $e) {
             throw new SyntaxException($e->getMessage(), $e->getCode(), $e);
         }
