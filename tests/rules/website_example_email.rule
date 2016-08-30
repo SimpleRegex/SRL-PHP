@@ -1,4 +1,4 @@
-srl: begin with any of (number, letter, one of "._%+-") once or more, literally "@", any of (number, letter, one of ".-") once or more, literally ".", letter at least 2 times, must end, case insensitive
+srl: begin with any of (digit, letter, one of "._%+-") once or more, literally "@", any of (digit, letter, one of ".-") once or more, literally ".", letter at least 2 times, must end, case insensitive
 match: "you@example.com"
 match: "you@example.email"
 match: "me@foo.bar.email"

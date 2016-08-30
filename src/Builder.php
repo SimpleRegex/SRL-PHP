@@ -184,14 +184,29 @@ class Builder extends TestMethodProvider
         return $this->add('(?:' . implode('', array_map([$this, 'escape'], str_split($chars))) . ')');
     }
 
+
     /**
-     * Match any number (in given span). Default will be a number between 0 and 9.
+     * Match any digit (in given span). Default will be a digit between 0 and 9.
      *
+     * @deprecated
+     * @see Builder::digit()
      * @param int $min
      * @param int $max
      * @return Builder
      */
     public function number(int $min = 0, int $max = 9) : self
+    {
+        return $this->digit($min, $max);
+    }
+
+    /**
+     * Match any digit (in given span). Default will be a digit between 0 and 9.
+     *
+     * @param int $min
+     * @param int $max
+     * @return Builder
+     */
+    public function digit(int $min = 0, int $max = 9) : self
     {
         $this->validateAndAddMethodType(self::METHOD_TYPE_CHARACTER, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
 

@@ -20,9 +20,9 @@ Regular Expressions don't have to be bulky? - No, they don't!
 Just have a look at this:
 
 ```
-begin with any of (number, letter, one of "._%+-") once or more,
+begin with any of (digit, letter, one of "._%+-") once or more,
 literally "@",
-any of (number, letter, one of ".-") once or more,
+any of (digit, letter, one of ".-") once or more,
 literally ".",
 letter at least 2,
 must end, case insensitive
@@ -33,13 +33,13 @@ Or, if you like, a implementation in code itself:
 ```php
 $query = SRL::startsWith()
     ->anyOf(function (Builder $query) {
-        $query->number()
+        $query->digit()
             ->letter()
             ->oneOf('._%+-');
     })->onceOrMore()
     ->literally('@')
     ->anyOf(function (Builder $query) {
-        $query->number()
+        $query->digit()
             ->letter()
             ->oneOf('.-');
     })->onceOrMore()
@@ -63,10 +63,10 @@ Let's go through it real quick:
 
 1. First, we require the matching string to start. This way, we make sure
 the match won't begin in the middle of something.
-2. Now, we're matching either a number, a letter, or one of the literal
+2. Now, we're matching either a digit, a letter, or one of the literal
 characters ., _, %, + or -. We expect there to be one or more of them.
 3. We now expect exactly one @ - Looks like an email address.
-4. Again, either numbers, letters or . or -, once or multiple times.
+4. Again, either digits, letters or . or -, once or multiple times.
 5. A dot. Seems to be the end of the TLDs name
 6. To the end, we'll expect two or more letters, for the TLD.
 7. We require the string to end now, to avoid matching stuff like 

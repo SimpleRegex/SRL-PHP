@@ -44,7 +44,7 @@ no match: "a"
 
 ```
 # This is a sample rule with an anonymous capture group and multiple results
-srl: capture (number)
+srl: capture (digit)
 capture for "123":
 - 0: 0: "1"
 - 1: 0: "2"

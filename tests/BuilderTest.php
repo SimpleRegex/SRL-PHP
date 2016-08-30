@@ -11,11 +11,11 @@ class BuilderTest extends TestCase
     {
         $regex = SRL::startsWith()
             ->literally('+')
-            ->number()->between(1, 3)
+            ->digit()->between(1, 3)
             ->literally(' ')
             ->number()->between(3, 4)
             ->literally('-')
-            ->number()->onceOrMore()
+            ->digit()->onceOrMore()
             ->mustEnd()->get();
 
         $this->assertEquals(1, preg_match($regex, '+49 123-45'));
@@ -30,13 +30,13 @@ class BuilderTest extends TestCase
     {
         $regex = SRL::startsWith()
             ->anyOf(function (Builder $query) {
-                $query->number()
+                $query->digit()
                     ->letter()
                     ->oneOf('._%+-');
             })->onceOrMore()
             ->literally('@')
             ->eitherOf(function (Builder $query) {
-                $query->number()
+                $query->digit()
                     ->letter()
                     ->oneOf('.-');
             })->onceOrMore()
@@ -92,9 +92,9 @@ class BuilderTest extends TestCase
         $query = SRL::capture(function (Builder $query) {
             $query->anyCharacter()->onceOrMore();
         })->whitespace()->capture(function (Builder $query) {
-            $query->number()->onceOrMore();
+            $query->digit()->onceOrMore();
         })->literally(', ')->capture(function (Builder $query) {
-            $query->number()->onceOrMore();
+            $query->digit()->onceOrMore();
         })->caseInsensitive();
 
         $this->assertEquals('April 1, 2003', $query->replace('${1} 1, $3', 'April 15, 2003', -1, $count));
@@ -115,9 +115,9 @@ class BuilderTest extends TestCase
         $query = SRL::capture(function (Builder $query) {
             $query->anyCharacter()->onceOrMore();
         })->whitespace()->capture(function (Builder $query) {
-            $query->number()->onceOrMore();
+            $query->digit()->onceOrMore();
         })->literally(', ')->capture(function (Builder $query) {
-            $query->number()->onceOrMore();
+            $query->digit()->onceOrMore();
         })->caseInsensitive();
 
         $this->assertEquals('invoked', $query->replace(function ($params) {

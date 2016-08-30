@@ -19,7 +19,7 @@ class LanguageInterpreterTest extends TestCase
         $this->assertFalse($srl->isMatching('htt://google.com'));
         $this->assertFalse($srl->isMatching('http://.com'));
 
-        $srl = new SRL('begin with capture (number from 0 to 8 once or more) as "number" if followed by "foo"');
+        $srl = new SRL('begin with capture (digit from 0 to 8 once or more) as "number" if followed by "foo"');
         $this->assertEquals('/^(?<number>[0-8]+)(?=(?:foo))/', $srl->get());
         $this->assertTrue($srl->isMatching('142foo'));
         $this->assertFalse($srl->isMatching('149foo'));
@@ -40,8 +40,8 @@ class LanguageInterpreterTest extends TestCase
 
     public function testEmail()
     {
-        $regex = new SRL('begin with any of (number, letter, one of "._%+-") once or more,' .
-            'literally "@", either of (number, letter, one of ".-") once or more, literally ".",' .
+        $regex = new SRL('begin with any of (digit, letter, one of "._%+-") once or more,' .
+            'literally "@", either of (digit, letter, one of ".-") once or more, literally ".",' .
             'letter at least 2, must end, case insensitive');
 
         $this->assertTrue($regex->isValid());

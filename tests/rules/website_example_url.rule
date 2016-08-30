@@ -1,4 +1,4 @@
-srl: begin with capture (letter once or more) as "protocol", literally "://", capture ( letter once or more, any of (letter, literally ".") once or more, letter at least 2 times ) as "domain", literally ":" optional, capture (number once or more) as "port" optional, capture (anything never or more) as "path" until (any of (literally "?", must end)), literally "?" optional, capture (anything never or more) as "parameters" optional, must end, case insensitive
+srl: begin with capture (letter once or more) as "protocol", literally "://", capture ( letter once or more, any of (letter, literally ".") once or more, letter at least 2 times ) as "domain", literally ":" optional, capture (digit once or more) as "port" optional, capture (anything never or more) as "path" until (any of (literally "?", must end)), literally "?" optional, capture (anything never or more) as "parameters" optional, must end, case insensitive
 match: "https://example.domain.com:1234/a/path?query=param"
 match: "http://domain.com?query=param"
 match: "http://domain.com/"

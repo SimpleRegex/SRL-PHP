@@ -7,13 +7,13 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 $regex = SRL::startsWith()
     ->anyOf(function (Builder $query) {
-        $query->number()
+        $query->digit()
             ->letter()
             ->oneOf('._%+-');
     })->onceOrMore()
     ->literally('@')
     ->anyOf(function (Builder $query) {
-        $query->number()
+        $query->digit()
             ->letter()
             ->oneOf('.-');
     })->onceOrMore()

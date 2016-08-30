@@ -14,7 +14,7 @@ use SRL\Language\Interpreter;
  * @method static \SRL\Builder anyOf(\Closure|string|\SRL\Builder $conditions)
  * @method static \SRL\Builder capture(\Closure|string|\SRL\Builder $conditions, string $name = null)
  * @method static \SRL\Builder between(int $min, int $max)
- * @method static \SRL\Builder number(int $min = 0, int $max = 9)
+ * @method static \SRL\Builder digit(int $min = 0, int $max = 9)
  * @method static \SRL\Builder uppercaseLetter(string $min = 'A', string $max = 'Z')
  * @method static \SRL\Builder letter(string $min = 'a', string $max = 'z')
  * @method static \SRL\Builder all() Apply the 'g' modifier
