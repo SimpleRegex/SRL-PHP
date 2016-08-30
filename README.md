@@ -7,11 +7,17 @@ We all know Regular Expressions are hard to read. Once written you're
 happy if you never ever have to touch this line of code again because
 you're going to have a hard time understanding what you've written there.
 
-Let's change that! Regular Expressions don't have to be that bulky.
+Before we get started, a short note on how to use SRL: You can either
+use this project directly, or, if you're not into PHP or including a
+library like that, you can build your query online and use the generated
+Regular Expression elsewhere:
+
+https://simple-regex.com/build
 
 ## An Example
 
-They don't have to be bulky? - No, they don't! Just have a look at this:
+Regular Expressions don't have to be bulky? - No, they don't!
+Just have a look at this:
 
 ```
 begin with either of (number, letter, one of "._%+-") once or more,
@@ -50,7 +56,8 @@ regular expression:
 ```
 
 But, however, the above is quite better to read and definitely better
-to maintain, isn't it?
+to maintain, isn't it? And to top that off: It's much harder to forget
+to escape something like a dot in SRL.
 
 Let's go through it real quick:
 
