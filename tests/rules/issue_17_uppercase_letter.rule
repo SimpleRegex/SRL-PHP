@@ -1,0 +1,6 @@
+srl: begin with (digit once), any of (letter, digit, uppercase letter) once or more, must end
+match: "1a"
+match: "56"
+match: "8B"
+no match: "abc"
+no match: "1"
