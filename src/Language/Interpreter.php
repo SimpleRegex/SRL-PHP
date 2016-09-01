@@ -88,7 +88,7 @@ class Interpreter extends TestMethodProvider
                     $method = $this->matcher->match($query[$i]);
 
                     // If anything was left over (for example parameters), grab them and insert them.
-                    $leftOver = str_ireplace($method->getOriginal(), '', $query[$i]);
+                    $leftOver = preg_replace("/{$method->getOriginal()}/i", '', $query[$i], 1);
                     $query[$i] = $method;
                     if (!empty($leftOver)) {
                         array_splice($query, $i + 1, 0, trim($leftOver));
