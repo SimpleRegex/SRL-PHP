@@ -2,6 +2,7 @@
 
 [![codecov](https://codecov.io/gh/SimpleRegex/SRL-PHP/branch/master/graph/badge.svg)](https://codecov.io/gh/SimpleRegex/SRL-PHP)
 [![Build Status](https://travis-ci.org/SimpleRegex/SRL-PHP.svg?branch=master)](https://travis-ci.org/SimpleRegex/SRL-PHP)
+[![License](https://poser.pugx.org/simpleregex/srl-php/license)](https://packagist.org/packages/simpleregex/srl-php)
 
 We all know Regular Expressions are hard to read. Once written you're
 happy if you never ever have to touch this line of code again because
