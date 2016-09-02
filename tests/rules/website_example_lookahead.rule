@@ -1,6 +1,0 @@
-srl: capture (digit) if not followed by (anything once or more, digit)
-match: "This example contains 3 numbers. 2 should not match. Only 1 should."
-no match: "some string without numbers"
-
-capture for "This example contains 3 numbers. 2 should not match. Only 1 should.":
-- 0: 0: "1"
