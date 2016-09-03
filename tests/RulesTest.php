@@ -11,9 +11,10 @@ class RulesTest extends TestCase
 
     public function testRules()
     {
-        foreach (glob(__DIR__ . '/rules/*.rule') as $ruleFile) {
+        foreach ($ruleFiles = glob(__DIR__ . '/rules/*.rule') as $ruleFile) {
             $this->runAssertions($this->buildData(file($ruleFile, FILE_IGNORE_NEW_LINES)));
         }
+        $this->assertGreaterThan(3, count($ruleFiles), 'Rules not found. Did you check out the submodule?');
     }
 
     protected function runAssertions(array $data)
