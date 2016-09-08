@@ -416,10 +416,13 @@ class Builder extends TestMethodProvider
      * @param int $min
      * @return Builder
      */
-    public function atLeast(int $min) : self
+    public function atLeast(int $min, $rest = Null ) : self
     {
         $this->validateAndAddMethodType(self::METHOD_TYPE_QUANTIFIER, self::METHOD_TYPE_CHARACTER | self::METHOD_TYPE_GROUP);
-
+		if( $rest != Null )
+		{
+			throw new SyntaxException();
+		}
         return $this->add(sprintf('{%d,}', $min));
     }
 
@@ -449,10 +452,13 @@ class Builder extends TestMethodProvider
      * @param int $count
      * @return Builder
      */
-    public function exactly(int $count) : self
+    public function exactly(int $count, $rest = Null ) : self
     {
         $this->validateAndAddMethodType(self::METHOD_TYPE_QUANTIFIER, self::METHOD_TYPE_CHARACTER | self::METHOD_TYPE_GROUP);
-
+		if( $rest != Null )
+		{
+			throw new SyntaxException();
+		}
         return $this->add(sprintf('{%d}', $count));
     }
 

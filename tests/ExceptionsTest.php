@@ -121,4 +121,22 @@ class ExceptionsTest extends TestCase
     {
         new SRL('literally (literally "foo")');
     }
+	
+	/**
+     * @expectedException  \SRL\Exceptions\SyntaxException
+     * @expectedExceptionMessage Invalid parameter given for `exactly`.
+     */
+    public function testInvalidExactlyArgument()
+    {
+        new SRL('letter exactly 2 times,not digit');
+    }
+
+	/**
+     * @expectedException  \SRL\Exceptions\SyntaxException
+     * @expectedExceptionMessage Invalid parameter given for `at least`.
+     */
+    public function testInvalidAtLeastArgument()
+    {
+        new SRL('letter at least 2 times,but digit');
+    }
 }
