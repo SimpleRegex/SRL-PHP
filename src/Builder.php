@@ -453,7 +453,7 @@ class Builder extends TestMethodProvider
      * @return Builder
      */
     public function exactly(int $count, $rest = Null ) : self
-    {	
+    {
         $this->validateAndAddMethodType(self::METHOD_TYPE_QUANTIFIER, self::METHOD_TYPE_CHARACTER | self::METHOD_TYPE_GROUP);
 		if( $rest != Null )
 		{
