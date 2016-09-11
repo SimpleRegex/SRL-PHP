@@ -21,10 +21,9 @@ class TimesMethod extends Method
             return $lower != 'times' && $lower != 'time';
         });
 
-		if( count( $params ) > 1 )
-		{
-			throw new SyntaxException('Invalid parameter.');			
-		}
+        if (count($params) > 1) {
+            throw new SyntaxException('Invalid parameter.');
+        }
 
         return parent::setParameters($params);
     }
