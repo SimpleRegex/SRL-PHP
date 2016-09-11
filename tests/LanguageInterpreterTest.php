@@ -36,7 +36,7 @@ class LanguageInterpreterTest extends TestCase
         $this->assertFalse($srl->isMatching('444444'));
         $this->assertFalse($srl->isMatching('1'));
         $this->assertFalse($srl->isMatching('563'));
-       
+
         $srl = new SRL('starts with digit exactly 2 times, letter at least 3 time');
         $this->assertEquals('/^[0-9]{2}[a-z]{3,}/', $srl->get());
         $this->assertTrue($srl->isMatching('12abc'));
