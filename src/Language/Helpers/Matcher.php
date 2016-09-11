@@ -55,8 +55,8 @@ class Matcher
         'number from' => ['class' => Methods\ToMethod::class, 'method' => 'digit'],
         'letter from' => ['class' => Methods\ToMethod::class, 'method' => 'letter'],
         'uppercase letter from' => ['class' => Methods\ToMethod::class, 'method' => 'uppercaseLetter'],
-        'exactly' => ['class' => Methods\AndMethod::class, 'method' => 'exactly'],
-        'at least' => ['class' => Methods\AndMethod::class, 'method' => 'atLeast'],
+        'exactly' => ['class' => Methods\TimesMethod::class, 'method' => 'exactly'],
+        'at least' => ['class' => Methods\TimesMethod::class, 'method' => 'atLeast'],
         'between' => ['class' => Methods\AndMethod::class, 'method' => 'between'],
         'capture' => ['class' => Methods\AsMethod::class, 'method' => 'capture'],
     ];
