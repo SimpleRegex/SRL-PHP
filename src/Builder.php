@@ -3,8 +3,8 @@
 namespace SRL;
 
 use Closure;
-use SRL\Builder\EitherOf;
 use SRL\Builder\Capture;
+use SRL\Builder\EitherOf;
 use SRL\Builder\NegativeLookahead;
 use SRL\Builder\NegativeLookbehind;
 use SRL\Builder\NonCapture;
@@ -184,7 +184,6 @@ class Builder extends TestMethodProvider
         return $this->add('(?:' . implode('', array_map([$this, 'escape'], str_split($chars))) . ')');
     }
 
-
     /**
      * Match any digit (in given span). Default will be a digit between 0 and 9.
      *
@@ -288,11 +287,11 @@ class Builder extends TestMethodProvider
      * @param Closure|Builder|string $conditions Anonymous function with its Builder as a first parameter.
      * @return Builder
      */
-    public function and ($conditions) : self
+    public function and($conditions) : self
     {
         $this->validateAndAddMethodType(self::METHOD_TYPE_GROUP, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
 
-        return $this->addClosure(new Builder, $conditions);
+        return $this->addClosure(new self, $conditions);
     }
 
     /**
@@ -469,8 +468,8 @@ class Builder extends TestMethodProvider
     /**
      * Apply laziness to last match.
      *
-     * @return Builder
      * @throws ImplementationException
+     * @return Builder
      */
     public function firstMatch() : self
     {
@@ -599,8 +598,8 @@ class Builder extends TestMethodProvider
      * Add the value from the simple mapper array to the regular expression.
      *
      * @param string $name
-     * @return Builder
      * @throws BuilderException
+     * @return Builder
      */
     protected function addFromMapper(string $name) : self
     {
@@ -644,7 +643,7 @@ class Builder extends TestMethodProvider
         if (is_string($conditions)) {
             // Assuming literal characters if conditions are of type string
             $builder->literally($conditions);
-        } elseif ($conditions instanceof Builder) {
+        } elseif ($conditions instanceof self) {
             $builder->raw($conditions->get(''));
         } else {
             $conditions($builder);
@@ -664,7 +663,7 @@ class Builder extends TestMethodProvider
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function get(string $delimiter = '/', bool $ignoreInvalid = false) : string
     {
@@ -687,8 +686,6 @@ class Builder extends TestMethodProvider
         return $regEx;
     }
 
-
-
     /**********************************************************/
     /*                     MAGIC METHODS                      */
     /**********************************************************/
@@ -698,8 +695,8 @@ class Builder extends TestMethodProvider
      *
      * @param $name
      * @param $arguments
-     * @return Builder
      * @throws ImplementationException
+     * @return Builder
      */
     public function __call($name, $arguments) : self
     {

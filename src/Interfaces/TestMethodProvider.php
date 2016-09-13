@@ -19,7 +19,7 @@ abstract class TestMethodProvider
      * @param bool $ignoreInvalid Ignore invalid regular expressions.
      * @return string The resulting regular expression.
      */
-    public abstract function get(string $delimiter = '/', bool $ignoreInvalid = false) : string;
+    abstract public function get(string $delimiter = '/', bool $ignoreInvalid = false) : string;
 
     /**
      * Test if regular expression matches given string.
@@ -28,8 +28,8 @@ abstract class TestMethodProvider
      * @param string $string
      * @param int $flags
      * @param int $offset
-     * @return bool
      * @throws PregException
+     * @return bool
      */
     public function isMatching(string $string, int $flags = 0, int $offset = 0) : bool
     {
@@ -95,8 +95,8 @@ abstract class TestMethodProvider
      *
      * @param string $string
      * @param int $offset
-     * @return Match[]|array
      * @throws PregException
+     * @return Match[]|array
      */
     public function getMatches(string $string, int $offset = 0) : array
     {
@@ -118,8 +118,8 @@ abstract class TestMethodProvider
      *
      * @param string $string
      * @param int $offset
-     * @return null|Match
      * @throws PregException
+     * @return null|Match
      */
     public function getMatch(string $string, int $offset = 0)
     {
