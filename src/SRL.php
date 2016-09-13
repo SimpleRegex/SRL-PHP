@@ -56,8 +56,8 @@ class SRL
      *
      * @param $name
      * @param $arguments
-     * @return mixed|Builder
      * @throws ImplementationException
+     * @return mixed|Builder
      */
     public static function __callStatic(string $name, array $arguments = [])
     {

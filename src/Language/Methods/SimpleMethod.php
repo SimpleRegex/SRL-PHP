@@ -11,7 +11,7 @@ use SRL\Interfaces\Method;
 class SimpleMethod extends Method
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setParameters(array $params) : Method
     {

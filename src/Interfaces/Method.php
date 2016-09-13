@@ -47,8 +47,8 @@ abstract class Method
      * Call method with parameters on given builder object.
      *
      * @param Builder $builder
-     * @return Builder|mixed
      * @throws SyntaxException
+     * @return Builder|mixed
      */
     public function callMethodOn(Builder $builder)
     {

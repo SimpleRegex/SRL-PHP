@@ -75,8 +75,8 @@ class Matcher
      * Match a string part to a method. Please note that the string must start with a method.
      *
      * @param string $part
-     * @return Method
      * @throws SyntaxException If no method was found, a SyntaxException will be thrown.
+     * @return Method
      */
     public function match(string $part) : Method
     {

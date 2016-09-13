@@ -66,7 +66,7 @@ class RulesTest extends TestCase
             $assertionMade = true;
         }
 
-        $this->assertTrue($assertionMade, "No assertion. Invalid rule." . $this->getExpression($query));
+        $this->assertTrue($assertionMade, 'No assertion. Invalid rule.' . $this->getExpression($query));
     }
 
     protected function buildData(array $lines) : array
