@@ -2,7 +2,6 @@
 
 namespace SRLTests;
 
-use SRL\Builder;
 use SRL\Language\Helpers\Cache;
 use SRL\SRL;
 

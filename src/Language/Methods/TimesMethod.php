@@ -18,6 +18,7 @@ class TimesMethod extends Method
             }
 
             $lower = strtolower($item);
+
             return $lower != 'times' && $lower != 'time';
         });
 

@@ -57,7 +57,7 @@ class Interpreter extends TestMethodProvider
     }
 
     /**
-     * Resolve the string array using the ParenthesesParser
+     * Resolve the string array using the ParenthesesParser.
      */
     protected function resolve()
     {
@@ -68,8 +68,8 @@ class Interpreter extends TestMethodProvider
      * Resolve the query array recursively and insert Methods.
      *
      * @param array $query
-     * @return array
      * @throws InterpreterException
+     * @return array
      */
     protected function resolveQuery(array $query) : array
     {
@@ -117,8 +117,8 @@ class Interpreter extends TestMethodProvider
      *
      * @param array $query
      * @param Builder|null $builder If no Builder is given, the default Builder will be taken.
-     * @return Builder
      * @throws SyntaxException
+     * @return Builder
      */
     public static function buildQuery(array $query, Builder $builder = null) : Builder
     {
@@ -168,7 +168,7 @@ class Interpreter extends TestMethodProvider
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function get(string $delimiter = '/', bool $ignoreInvalid = false) : string
     {

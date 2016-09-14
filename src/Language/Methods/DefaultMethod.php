@@ -9,5 +9,4 @@ use SRL\Interfaces\Method;
  */
 class DefaultMethod extends Method
 {
-
 }

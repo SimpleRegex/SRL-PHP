@@ -48,8 +48,8 @@ class ParenthesesParser
     /**
      * Parse given string and return its structure.
      *
-     * @return string[]
      * @throws SyntaxException
+     * @return string[]
      */
     public function parse() : array
     {
@@ -60,8 +60,8 @@ class ParenthesesParser
      * Internal parse method used for recursion.
      *
      * @param string $string
-     * @return string[]
      * @throws SyntaxException
+     * @return string[]
      */
     protected function parseString(string $string) : array
     {
@@ -157,8 +157,8 @@ class ParenthesesParser
      * @param string $string
      * @param int $openPos
      * @param array $stringPositions
-     * @return array
      * @throws SyntaxException
+     * @return array
      */
     protected function createLiterallyObjects(string $string, int $openPos, array $stringPositions) : array
     {
