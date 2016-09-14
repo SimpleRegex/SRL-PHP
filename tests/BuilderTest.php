@@ -152,10 +152,10 @@ class BuilderTest extends TestCase
     public function testNotDigit()
     {
         $regex = SRL::notDigit()
-            ->notDigit(2,5)
+            ->notDigit(2, 5)
             ->get();
 
-        $this->assertEquals("/[^0-9][^2-5]/", $regex);
+        $this->assertEquals('/[^0-9][^2-5]/', $regex);
     }
 
     public function testNotLetter()
@@ -164,12 +164,12 @@ class BuilderTest extends TestCase
             ->notLetter('a', 'd')
             ->get();
 
-        $this->assertEquals("/[^a-z][^a-d]/", $regex);
+        $this->assertEquals('/[^a-z][^a-d]/', $regex);
     }
 
     public function testNotOneOf()
     {
-        $regex = SRL::notOneOf( 'a$#' )->get();
+        $regex = SRL::notOneOf('a$#')->get();
 
         $this->assertEquals('/[^a\$#]/', $regex);
     }

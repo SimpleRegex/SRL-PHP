@@ -279,7 +279,7 @@ class Builder extends TestMethodProvider
     {
         return $this->notLetter($min, $max);
     }
-    
+
     /**
      * Match anything but lowercase letter (between a to z).
      *
