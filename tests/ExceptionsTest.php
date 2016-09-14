@@ -128,7 +128,7 @@ class ExceptionsTest extends TestCase
      */
     public function testInvalidExactlyArgument()
     {
-        new SRL('letter exactly 2 times,not digit');
+        new SRL('letter exactly 2 times,foo digit');
     }
 
     /**

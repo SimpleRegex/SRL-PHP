@@ -44,6 +44,15 @@ class LanguageInterpreterTest extends TestCase
         $this->assertFalse($srl->isMatching('123abc'));
         $this->assertFalse($srl->isMatching('1a'));
         $this->assertFalse($srl->isMatching(''));
+
+        $srl = new SRL('starts with not digit, not digit from 0 to 2, not number, not number from 3 to 5  ');
+        $this->assertEquals('/^[^0-9][^0-2][^0-9][^3-5]/', $srl->get());
+
+        $srl = new SRL('starts with not letter, not uppercase letter, not letter from f to o, not uppercase letter from O to z');
+        $this->assertEquals('/^[^a-z][^A-Z][^f-o][^O-z]/', $srl->get());
+
+        $srl = new SRL('starts with not one of "!@#/"');
+        $this->assertEquals('/^[^!@#\/]/', $srl->get());
     }
 
     public function testEmail()
