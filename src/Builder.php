@@ -165,10 +165,26 @@ class Builder extends TestMethodProvider
     {
         $this->validateAndAddMethodType(self::METHOD_TYPE_CHARACTER, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
 
-        $chars = implode('', array_map([$this, 'escape'], str_split($chars)));
-        $chars = str_replace(['-', ']'], ['\\-', '\\]'], $chars);
+        $chars = $this->escape($chars);
+        $chars = $this->escapeRangeSpecificChars($chars);
 
         return $this->add('[' . $chars . ']');
+    }
+
+    /**
+     * Literally match anything but one of these characters.
+     *
+     * @param string $chars
+     * @return Builder
+     */
+    public function notOneOf(string $chars)
+    {
+        $this->validateAndAddMethodType(self::METHOD_TYPE_CHARACTER, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
+
+        $chars = $this->escape($chars);
+        $chars = $this->escapeRangeSpecificChars($chars);
+
+        return $this->add('[^' . $chars . ']');
     }
 
     /**
@@ -181,7 +197,7 @@ class Builder extends TestMethodProvider
     {
         $this->validateAndAddMethodType(self::METHOD_TYPE_CHARACTER, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
 
-        return $this->add('(?:' . implode('', array_map([$this, 'escape'], str_split($chars))) . ')');
+        return $this->add('(?:' . $this->escape($chars) . ')');
     }
 
     /**
@@ -213,6 +229,20 @@ class Builder extends TestMethodProvider
     }
 
     /**
+     * Match anything but digit (in given span). Default will be a digit between 0 and 9.
+     *
+     * @param int $min
+     * @param int $max
+     * @return Builder
+     */
+    public function notDigit(int $min = 0, int $max = 9) : self
+    {
+        $this->validateAndAddMethodType(self::METHOD_TYPE_CHARACTER, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
+
+        return $this->add("[^$min-$max]");
+    }
+
+    /**
      * Match any uppercase letter (between A to Z).
      *
      * @param string $min
@@ -236,6 +266,32 @@ class Builder extends TestMethodProvider
         $this->validateAndAddMethodType(self::METHOD_TYPE_CHARACTER, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
 
         return $this->add("[$min-$max]");
+    }
+
+    /**
+     * Match anything but uppercase letter (between A to Z).
+     *
+     * @param string $min
+     * @param string $max
+     * @return Builder
+     */
+    public function notUppercaseLetter(string $min = 'A', string $max = 'Z') : self
+    {
+        return $this->notLetter($min, $max);
+    }
+
+    /**
+     * Match anything but lowercase letter (between a to z).
+     *
+     * @param string $min
+     * @param string $max
+     * @return Builder
+     */
+    public function notLetter(string $min = 'a', string $max = 'z') : self
+    {
+        $this->validateAndAddMethodType(self::METHOD_TYPE_CHARACTER, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
+
+        return $this->add("[^$min-$max]");
     }
 
     /**********************************************************/
@@ -509,14 +565,35 @@ class Builder extends TestMethodProvider
     /**********************************************************/
 
     /**
+     * Escape all characters in string.
+     *
+     * @param string $chars
+     * @return string
+     */
+    protected function escape(string $chars)
+    {
+        return implode('', array_map([$this, 'escapeChar'], str_split($chars)));
+    }
+
+    /**
      * Escape specific character.
      *
      * @param string $char
      * @return string
      */
-    protected function escape(string $char)
+    protected function escapeChar(string $char)
     {
         return (strpos(static::NON_LITERAL_CHARACTERS, $char) !== false ? '\\' : '') . $char;
+    }
+
+    /**
+     * Escape '-' and ']' in string to be used in range.
+     *
+     * @return string
+     */
+    protected function escapeRangeSpecificChars(string $chars)
+    {
+        return str_replace(['-', ']'], ['\\-', '\\]'], $chars);
     }
 
     /**

@@ -148,4 +148,29 @@ class BuilderTest extends TestCase
     {
         $this->assertTrue(SRL::literally('foo')->raw('b[a-z]r')->isValid());
     }
+
+    public function testNotDigit()
+    {
+        $regex = SRL::notDigit()
+            ->notDigit(2, 5)
+            ->get();
+
+        $this->assertEquals('/[^0-9][^2-5]/', $regex);
+    }
+
+    public function testNotLetter()
+    {
+        $regex = SRL::notLetter()
+            ->notLetter('a', 'd')
+            ->get();
+
+        $this->assertEquals('/[^a-z][^a-d]/', $regex);
+    }
+
+    public function testNotOneOf()
+    {
+        $regex = SRL::notOneOf('a$#')->get();
+
+        $this->assertEquals('/[^a\$#]/', $regex);
+    }
 }
