@@ -122,7 +122,7 @@ class Builder extends TestMethodProvider
             'allowed' => self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS
         ],
         'backslash' => [
-            'add' => '\\',
+            'add' => '\\\\',
             'type' => self::METHOD_TYPE_CHARACTER,
             'allowed' => self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS
         ],
