@@ -30,6 +30,7 @@ class Matcher
         'all' => ['class' => Methods\SimpleMethod::class, 'method' => 'all'],
         'anything' => ['class' => Methods\SimpleMethod::class, 'method' => 'any'],
         'tab' => ['class' => Methods\SimpleMethod::class, 'method' => 'tab'],
+        'backslash' => ['class' => Methods\SimpleMethod::class, 'method' => 'backslash'],
         'unicode' => ['class' => Methods\SimpleMethod::class, 'method' => 'unicode'],
         'digit' => ['class' => Methods\SimpleMethod::class, 'method' => 'digit'],
         'not digit' => ['class' => Methods\SimpleMethod::class, 'method' => 'notDigit'],

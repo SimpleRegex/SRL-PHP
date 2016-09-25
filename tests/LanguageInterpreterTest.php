@@ -53,6 +53,11 @@ class LanguageInterpreterTest extends TestCase
 
         $srl = new SRL('starts with not one of "!@#/"');
         $this->assertEquals('/^[^!@#\/]/', $srl->get());
+
+        $srl = new SRL('backslash');
+        $this->assertEquals('/\\\\/', $srl->get());
+        $this->assertTrue($srl->isMatching('\\'));
+        $this->assertFalse($srl->isMatching('/'));
     }
 
     public function testEmail()
