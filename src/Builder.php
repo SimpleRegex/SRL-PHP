@@ -17,7 +17,6 @@ use SRL\Exceptions\SyntaxException;
 use SRL\Interfaces\TestMethodProvider;
 
 /**
- * @method $this all() Apply the 'g' modifier
  * @method $this multiLine() Apply the 'm' modifier
  * @method $this singleLine() Apply the 's' modifier
  * @method $this caseInsensitive() Apply the 'i' modifier
@@ -34,6 +33,7 @@ use SRL\Interfaces\TestMethodProvider;
  * @method $this noWhitespace() Match any non-whitespace character.
  * @method $this anyCharacter() Match any word character.
  * @method $this noCharacter() Match any non-word character.
+ * @method $this backslash() Match a backslash (\).
  */
 class Builder extends TestMethodProvider
 {
@@ -57,7 +57,6 @@ class Builder extends TestMethodProvider
 
     /** @var string[] Map method names to actual modifiers. */
     protected $modifierMapper = [
-        'all' => 'g',
         'multiLine' => 'm',
         'singleLine' => 's',
         'caseInsensitive' => 'i',
@@ -121,7 +120,12 @@ class Builder extends TestMethodProvider
             'add' => '\W',
             'type' => self::METHOD_TYPE_CHARACTER,
             'allowed' => self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS
-        ]
+        ],
+        'backslash' => [
+            'add' => '\\',
+            'type' => self::METHOD_TYPE_CHARACTER,
+            'allowed' => self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS
+        ],
     ];
 
     /** @var string Desired group, if any. */
