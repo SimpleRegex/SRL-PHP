@@ -17,7 +17,6 @@ use SRL\Language\Interpreter;
  * @method static \SRL\Builder digit(int $min = 0, int $max = 9)
  * @method static \SRL\Builder uppercaseLetter(string $min = 'A', string $max = 'Z')
  * @method static \SRL\Builder letter(string $min = 'a', string $max = 'z')
- * @method static \SRL\Builder all() Apply the 'g' modifier
  * @method static \SRL\Builder multiLine() Apply the 'm' modifier
  * @method static \SRL\Builder singleLine() Apply the 's' modifier
  * @method static \SRL\Builder caseInsensitive() Apply the 'i' modifier
@@ -33,6 +32,7 @@ use SRL\Language\Interpreter;
  * @method static \SRL\Builder noWhitespace() Match any non-whitespace character.
  * @method static \SRL\Builder anyCharacter() Match any word character.
  * @method static \SRL\Builder noCharacter() Match any non-word character.
+ * @method static \SRL\Builder backslash() Match a backslash (\).
  *
  * @mixin \SRL\Language\Interpreter
  */
