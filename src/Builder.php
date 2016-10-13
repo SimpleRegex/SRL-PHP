@@ -37,7 +37,6 @@ use SRL\Interfaces\TestMethodProvider;
  */
 class Builder extends TestMethodProvider
 {
-    const NON_LITERAL_CHARACTERS = '[\\^$.|?*+()';
     const METHOD_TYPE_BEGIN = 0b00001;
     const METHOD_TYPE_CHARACTER = 0b00010;
     const METHOD_TYPE_GROUP = 0b00100;
@@ -170,7 +169,6 @@ class Builder extends TestMethodProvider
         $this->validateAndAddMethodType(self::METHOD_TYPE_CHARACTER, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
 
         $chars = $this->escape($chars);
-        $chars = $this->escapeRangeSpecificChars($chars);
 
         return $this->add('[' . $chars . ']');
     }
@@ -186,7 +184,6 @@ class Builder extends TestMethodProvider
         $this->validateAndAddMethodType(self::METHOD_TYPE_CHARACTER, self::METHOD_TYPES_ALLOWED_FOR_CHARACTERS);
 
         $chars = $this->escape($chars);
-        $chars = $this->escapeRangeSpecificChars($chars);
 
         return $this->add('[^' . $chars . ']');
     }
@@ -576,28 +573,7 @@ class Builder extends TestMethodProvider
      */
     protected function escape(string $chars)
     {
-        return implode('', array_map([$this, 'escapeChar'], str_split($chars)));
-    }
-
-    /**
-     * Escape specific character.
-     *
-     * @param string $char
-     * @return string
-     */
-    protected function escapeChar(string $char)
-    {
-        return (strpos(static::NON_LITERAL_CHARACTERS, $char) !== false ? '\\' : '') . $char;
-    }
-
-    /**
-     * Escape '-' and ']' in string to be used in range.
-     *
-     * @return string
-     */
-    protected function escapeRangeSpecificChars(string $chars)
-    {
-        return str_replace(['-', ']'], ['\\-', '\\]'], $chars);
+        return preg_quote($chars);
     }
 
     /**
