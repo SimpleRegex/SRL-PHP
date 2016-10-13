@@ -13,7 +13,7 @@ class LanguageInterpreterTest extends TestCase
 
         $srl = new SRL('begin with literally "http", optional "s", literally "://", optional "www.",' .
             'anything once or more, literally ".com", must end');
-        $this->assertEquals('/^(?:http)(?:(?:s))?(?::\/\/)(?:(?:www\.))?.+(?:\.com)$/', $srl->get());
+        $this->assertEquals('/^(?:http)(?:(?:s))?(?:\:\/\/)(?:(?:www\.))?.+(?:\.com)$/', $srl->get());
         $this->assertTrue($srl->isMatching('http://www.ebay.com'));
         $this->assertTrue($srl->isMatching('https://google.com'));
         $this->assertFalse($srl->isMatching('htt://google.com'));
@@ -52,7 +52,7 @@ class LanguageInterpreterTest extends TestCase
         $this->assertEquals('/^[^a-z][^A-Z][^f-o][^O-z]/', $srl->get());
 
         $srl = new SRL('starts with not one of "!@#/"');
-        $this->assertEquals('/^[^!@#\/]/', $srl->get());
+        $this->assertEquals('/^[^\!@#\/]/', $srl->get());
 
         $srl = new SRL('backslash');
         $this->assertEquals('/\\\\/', $srl->get());
