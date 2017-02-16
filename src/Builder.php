@@ -737,7 +737,7 @@ class Builder extends TestMethodProvider
         );
 
         if (!$ignoreInvalid && !$this->isValid($regEx)) {
-            throw new SyntaxException('Generated expression seems to be inalid.');
+            throw new SyntaxException('Generated expression seems to be invalid.');
         }
 
         return $regEx;
