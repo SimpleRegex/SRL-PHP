@@ -2,7 +2,7 @@
 
 namespace SRL;
 
-class Match
+class SRLMatch
 {
     /** @var string[] */
     protected $rawData = [];
