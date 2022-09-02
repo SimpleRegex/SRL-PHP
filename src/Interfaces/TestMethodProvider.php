@@ -3,7 +3,7 @@
 namespace SRL\Interfaces;
 
 use SRL\Exceptions\PregException;
-use SRL\Match;
+use SRL\SRLMatch;
 
 /**
  * Provider for methods that can be applied to the built regular expression by the user.
@@ -92,11 +92,10 @@ abstract class TestMethodProvider
 
     /**
      * Match regular expression against string and return all matches.
-     *
      * @param string $string
      * @param int $offset
-     * @throws PregException
-     * @return Match[]|array
+     * @return SRLMatch[]|array
+     *@throws PregException
      */
     public function getMatches(string $string, int $offset = 0) : array
     {
@@ -107,7 +106,7 @@ abstract class TestMethodProvider
         $matchObjects = [];
 
         foreach ($matches as $match) {
-            $matchObjects[] = new Match($match);
+            $matchObjects[] = new SRLMatch($match);
         }
 
         return $matchObjects;
@@ -115,11 +114,10 @@ abstract class TestMethodProvider
 
     /**
      * Match regular expression against string and return first match object.
-     *
      * @param string $string
      * @param int $offset
-     * @throws PregException
-     * @return null|Match
+     * @return null|SRLMatch
+     *@throws PregException
      */
     public function getMatch(string $string, int $offset = 0)
     {
